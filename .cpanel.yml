@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/a2bremov/davidswinstead.com/misc/kilgore-git
+    - export DEPLOYPATH=/home/a2bremov/davidswinstead.com/misc/kilgore
     - /bin/cp -R * $DEPLOYPATH
