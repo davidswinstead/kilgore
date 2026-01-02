@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kilgore's Sandwich: ATP Experiment Analysis Tool</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div id="fileDropZone" class="dropzone">
+            <p>Drop CSV files here or click to browse</p>
+            <input type="file" id="fileInput" accept=".csv" multiple style="display: none">
+        </div>
+        <div class="filter-controls">
+            <div class="filter-row">
+                <select id="statusFilter" title="Show experiments by status">
+                    <option value="active">🟢 Active</option>
+                    <option value="completed">🟡 Completed</option>
+                    <option value="stale">⚫ Stale</option>
+                    <option value="all">📋 All</option>
+                </select>
+                <select id="sortExperiments" title="Sort experiments">
+                    <option value="recently-updated">🕒 Recent</option>
+                    <option value="ending-soon">⏰ Ending</option>
+                    <option value="business-impact" id="business-impact-option" style="display: none;">💰 Impact</option>
+                </select>
+            </div>
+            <input type="text" id="experimentSearch" placeholder="Search..." title="Search experiments">
+        </div>
+        <div id="experimentsList">
+            <p>No saved experiments</p>
+        </div>
+    </div>
+    
+    <div>
+        <div class="container">
+			<h1 style="cursor: pointer;" onclick="window.location.reload()">Kilgore's Sandwich</h1>
+            <!-- Main Content -->
+            <div class="content">
+                
+                <!-- Upload Section -->
+                <div id="uploadSection">
+                
+                    <!-- Debug Warning Banner -->
+                    <div id="debugWarning" class="hidden" style="background-color: #dc3545; color: white; padding: 10px; margin-bottom: 20px; border-radius: 4px; text-align: center; font-weight: bold;">
+                        <p>⚠️ Developer options are enabled. THAR BE DRAGONS!</p>
+                        <p>Sort by business impact now enabled (even includes metrics that are not conclusive, so do not rely on these numbers).</p>
+                        <p>Bayesian calcs extended to all binomial metrics, not just the ones selected as primary and seconday (potentially encourages p-hacking)</p>
+                        <p>Go Fish mode now enabled, when you view full metric list you can filter to only validated/directional metrics (potentially encourages p-hacking)</p>
+                        <p>Use these with caution! They are hidden by default for a reason!</p>
+                    </div>
+                        <h2>Open adobe workspace-&gt; Project menu -&gt; Export CSV -&gt; Add here</h2>
+                        <p>Kilgore's Sandwich is an Adobe CSV output analyser and logger. You grab your CSV output from Adobe, add it, and the tool will help you analyse it. Can add multiple files at once.</p>
+                        <h2>Features:</h2> 
+                        <ul>
+                            <li>Shows you all metrics found in the file</li>
+                            <li>Allows you to select primary and secondary metrics for quick-view </li>
+                            <li>Calculates relative uplift of selected metrics</li>
+                            <li>Provides bayesian analysis for metrics where you tell it to (you can run the bayesian maths on any metric you want but it gives results perfectly aligned with AXE <strong>only when used on binomial metric</strong>)</li>
+                            <li>Calculates daily average traffic rate</li>
+                            <li>Calculates estimated remaining runtime (if you entered the sample size) with a progress meter</li>
+                            <li>Share button provides a nice summary image in your clipboard, you can paste it into Teams/JIRA</li>
+                            <li>Saves the data for you to quickly come back and check later (approx 10x faster than going back to Adobe))</li>
+                            <li><span class="badge-new">NEW</span> Automatic SRM detection/warning</li>
+                        </ul>
+                        <p>The first time you add a CSV from an ATP-XXX number the tool doesn't recognise, you need to select your primary/secondary KPIs. After this it will be saved in localStorage for next time.</p>
+                        <p><strong>The conclusions you draw are only as good as the data you are looking at. For best results add fresh data every day. </strong>Tip: You can ask Adobe to automatically email you a fresh set of CSV's every morning for each experiment you're running. </p>
+                        <h2>Fresh Changes!</h2>
+                        <p><strong>Latest version rolled out August 21st 2025</strong></p>
+                        <ul>
+                            <li><span class="badge-new">NEW</span> <strong>Support for multiple variants!</strong> We can now support A/B/C/D tests!</strong></li>
+                            <li><strong><span class="badge-new">NEW</span> SRM Detection improvements</strong>
+                                <ul>
+                                    <li><span class="badge-new">NEW</span> SRM detection now has a warning before the full alert. Warn at p < 0.05, alert at p< 0.001</li>
+                                    <li><span class="badge-new">NEW</span> SRM detection now shows the control and variant ratios in the SRM section</li>
+                                </ul>
+                            </li>
+                            <li><span class="badge-new">NEW</span> <strong>All metrics (including Revenue) are now properly divided by visitors.</strong> So orders metric is equivalent to conversion, Revenue metric is equivalent to RPV.</li>
+                            <li><span class="badge-new">NEW</span> <strong>More accurate traffic/runtime estimation</strong> We no longer count first exp day and current day inclusive - this was leading to an overestimation of the runtime so far, which lead to an underestimation of the daily traffic, therefore also the remaining runtime and the business impact.</li>
+                            <li><span class="badge-new">NEW</span> <strong>Projected end date now shows the end of the next week cycle</strong> This is a more accurate estimate of when the experiment will end, and is more useful for planning.</li>
+                            <li><span class="badge-new">NEW</span> <strong>Days remaining added </strong> so that now we see not only the end date, but how far away this is from today.</li>
+                            <li><span class="badge-new">NEW</span> <strong>Easier initial setup</strong> when you select one of the most common metrics as primary, it defaults the rest of the most common to your secondaries (you can edit them of course).</li>
+                            <li><span class="badge-new">NEW</span> Minor bugfix: The business impact calculation was showing the metric ID number, fixed this to show the metric <i>name</i> instead.</li>
+                            <li><span class="badge-new">NEW</span> Minor bugfix: When editing an exp, the bayesian metric checks are now properly updated.</li>
+                            <li><span class="badge-new">NEW</span> Minor UI tweak: Font colours tweaked on experiment cards, to emphasise the values.</li>
+                        </ul>
+                        <p><strong>Rolled out August 14th 2025</strong></p>
+                        <ul>
+                            <li>Automatic SRM detection, fires at p=0.0001 (VERY conservative)</li>
+                            <li>Projected end date now hidden until 5 days data is collected (first few days are too erratic to project)</li>
+                        </ul>
+                        <p><strong>Rolled out July 31 2025</strong></p>
+                        <ul>
+                            <li>Exp search functionality</li>
+                            <li>Metric selection now shows "most selected"  at the top, now much quick easier to add new exps</li>
+                            <li>List cleanup, by introducing active/stale/complete status</li>
+                            <li>Add "Share Link" function to each individual test</li>
+                            <li>Storage meter for checking localStorage capacity</li>
+                            <li>Bulk cleanup tool for removing experiments older than 90 days</li>
+                            <li>Moving to a fixed side column design for screen real estate</li>
+                            <li>Ability to set sample size based on a metric other than traffic (for AOV experiments)</li>
+                            <li>Relative percentages need to be based on the rate not the absolute number, currently they differ from AXE</li>
+                            <li>Visual indicators to show sample size + validated or not, in exp card</li>
+                        </ul>
+                        
+                        <p><strong>Rolled out earlier (before date tracking)</strong></p>
+                        <ul>
+                            <li>Invert the bayesian metrics list, instead of an inclusion we can make it an exclusion, since most metrics are binomial (will help with auto selection, and with go fish mode)</li>
+                            <li>Review of experiment card info, would be good to include # days remaining but I don't want the card to be too big so will need to drop something off</li>
+                            <li>Develop options mode times out after 3 days</li>
+                            <li>Default name to include ATP number</li>
+                            <li>Ability to import/export partial JSON configs, per experiment</li>
+                            <li>If I can figure out a way to minify the JSON we can create shareable URLs, that would enable a neat feature to "Shate Latest Config" via a link</li>
+                        </ul>
+                        <h2>Coming soon</h2>
+                            <p>
+								Features in an upcoming version
+                            </p>
+                            
+                            <p><strong>Bug fixes</strong></p>
+                            <ul>
+                                <li><i>Revenue based metrics (AOV, RPV, etc) do not use winsorisation, so the uplift may not match precisely with what you see in AXE. Still it should usually be very close, and is a useful guideline. We need to make sure users are aware of this.</i></li>
+                                <li><i>The # of metrics on the "Show Everything" button seems to go +5 and -5 when you click it.</i></li>
+                                <li><i>Code is still converting in and out of v1/v2 configs in some places.</i></li>
+                                <li><i>Sometimes the main exp view says the runtime is completed well before it is.</i></li>
+                                <li>When first adding a new CSV, the auto date detection seems to be subtracting 1 day from the date</li>
+                                <li><span class="badge-new">IMPORTANT</span> When doing bulk upload, seems the SRM is calculated only once, and then applied to them all</li>
+                            </ul>   
+                            <p><strong>UI improvements</strong></p>
+                            <ul>
+                                <li>UI of the left col needs to collapse down, as the older version was</li>
+                                <li>Card should show the sorted-by info</li>
+                                <li>Link to JIRA tickets</li>
+                            </ul>
+
+                            <p><strong>New Features</strong></p>
+                            <ul>
+
+                                <li>To save time adding new exps: When selecting primary metric we can propose to default secondary to the previously selected ones (secondaries often used with this primary)</li>
+                                <li>Go fish feature can launch to public (currently in dev options only) if I implement bonferroni corrections</li>
+                                <li>Eventually I want to be able to save and compare previous versions but that's a stretch goal</li>
+                            </ul>
+        
+                            <h2>Disclaimer</h2>
+                            <p>This is NOT a live data tool. This does NOT read from any live source. This does NOT connect to anything at all, not Adobe, not monetate, not AXE, nothing. It literally just takes the CSV you add and parses it for convenience. </p>
+                            <p>The processing is done entirely on your local machine (JavaScript), no data is sent to any server for processing. All config and data storage is in your browser's localStorage functionality, entirely on your machine, nothing at all stored on my server at any point. Seriously I don't even have Google Analytics on this thing.</p>
+                            <p>Don't believe me that nothing is sent to any server? It's HTML and JavaScript so you can literally just download all the files to your local machine and run it there and see for yourself! It will function exactly the same as the live version, and you can even edit the code if you want to.</p>
+                            
+                            
+                            <div class="import-config-section">
+                            <button id="toggleImport" class="btn">Edit Raw Config</button>
+                            <button id="toggleDevOptions" class="btn" style="background-color: #6c757d; color: white;">Toggle developer options</button>
+                            <button id="shareExpData" class="btn" style="background-color: #28a745; color: white;">Share exp data</button>
+                        </div>
+                            <div id="importConfigPanel" class="hidden">
+                                <textarea id="configImportArea" placeholder="Current localStorage configuration" rows="25" style="width: 100%; margin: 10px 0;"></textarea>
+                                <button id="importConfigButton" class="btn">Save Changes</button>
+                            </div>
+                            
+                            <!-- Share Experiment Data Modal -->
+                            <div id="shareExpModal" class="modal hidden">
+                                <div class="modal-content">
+                                    <h3>Select Experiments to Share</h3>
+                                    <p>Choose experiments updated in the last 7 days:</p>
+                                    <div id="experimentCheckboxes"></div>
+                                    <div class="modal-buttons">
+                                        <button id="confirmShare" class="btn" style="background-color: #28a745; color: white;">Generate Shareable URL</button>
+                                        <button id="cancelShare" class="btn">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Share URL Modal -->
+                            <div id="shareUrlModal" class="modal hidden">
+                                <div class="modal-content">
+                                    <h3>Shareable URL Generated</h3>
+                                    <p>Copy this URL to share your experiment data:</p>
+                                    <textarea id="shareUrlText" readonly style="width: 100%; height: 100px; margin: 10px 0; font-family: monospace;"></textarea>
+                                    <div class="modal-buttons">
+                                        <button id="copyShareUrl" class="btn">Copy URL</button>
+                                        <button id="closeShareUrl" class="btn">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+        
+                    </div>
+                
+                <!-- Configuration Section -->
+                <div id="configSection" class="hidden">
+                    <h2>Configure Experiment</h2>
+                    <div class="config-form">
+                        <div class="form-group">
+                            <label for="experimentName">Experiment Name:</label>
+                            <input type="text" id="experimentName" placeholder="Enter experiment name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="primaryKPI">Primary KPI:</label>
+                            <select id="primaryKPI">
+                                <option value="">Select primary KPI</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondaryKPIs">Secondary KPIs (up to 5):</label>
+                            <div id="secondaryKPIs"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sampleSize">Sample Size Target:</label>
+                            <input type="number" id="sampleSize" placeholder="e.g., 68500">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sampleSizeMetric">Sample Size Metric (optional):</label>
+                            <div id="sampleSizeMetric"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="startDate">Start Date:</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Bayesian Analysis:</label>
+                            <div id="bayesianOptions"></div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="saveConfig" class="btn">Save Configuration</button>
+                            <button id="cancelConfig" class="btn">Cancel</button>
+                            <button id="deleteConfig" class="btn btn-danger">Delete from Tool</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="resultsSection" class="hidden">
+                    <div id="experimentInfo"></div>
+                    <div id="resultsTable"></div>
+                    <div id="actionsBar"></div>
+                    <div id="extraMetrics" class="hidden"></div>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; color: #CCC; font-size: 8px; margin: 20px; margin-left: 320px;" class="made-you-look">made you look</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/bayesian.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/convertjson.js"></script>
+    <script src="js/srm.js"></script>
+    <script src="js/main.js"></script>
+    
+</body>
+</html>
+          
