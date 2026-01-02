@@ -69,23 +69,29 @@
                         <p>The first time you add a CSV from an ATP-XXX number the tool doesn't recognise, you need to select your primary/secondary KPIs. After this it will be saved in localStorage for next time.</p>
                         <p><strong>The conclusions you draw are only as good as the data you are looking at. For best results add fresh data every day. </strong>Tip: You can ask Adobe to automatically email you a fresh set of CSV's every morning for each experiment you're running. </p>
                         <h2>Fresh Changes!</h2>
-                        <p><strong>Latest version rolled out August 21st 2025</strong></p>
+                        <p><strong>Latest version rolled out January 2nd 2026</strong></p>
                         <ul>
-                            <li><span class="badge-new">NEW</span> <strong>Support for multiple variants!</strong> We can now support A/B/C/D tests!</strong></li>
-                            <li><strong><span class="badge-new">NEW</span> SRM Detection improvements</strong>
+                            <li><span class="badge-new">NEW</span> Version control moved to github</li>
+                            <li><span class="badge-new">NEW</span> Probability Thresholds now displayed in tooltip with results</li>
+                            <li><span class="badge-new">NEW</span> Business impact calculation has somehow broken along the way, fixed now</li>
+                        </ul>
+                        <p><strong>Rolled out August 21st 2025</strong></p>
+                        <ul>
+                            <li><strong>Support for multiple variants!</strong> We can now support A/B/C/D tests!</strong></li>
+                            <li><strong>SRM Detection improvements</strong>
                                 <ul>
-                                    <li><span class="badge-new">NEW</span> SRM detection now has a warning before the full alert. Warn at p < 0.05, alert at p< 0.001</li>
-                                    <li><span class="badge-new">NEW</span> SRM detection now shows the control and variant ratios in the SRM section</li>
+                                    <li>SRM detection now has a warning before the full alert. Warn at p < 0.05, alert at p< 0.001</li>
+                                    <li>SRM detection now shows the control and variant ratios in the SRM section</li>
                                 </ul>
                             </li>
-                            <li><span class="badge-new">NEW</span> <strong>All metrics (including Revenue) are now properly divided by visitors.</strong> So orders metric is equivalent to conversion, Revenue metric is equivalent to RPV.</li>
-                            <li><span class="badge-new">NEW</span> <strong>More accurate traffic/runtime estimation</strong> We no longer count first exp day and current day inclusive - this was leading to an overestimation of the runtime so far, which lead to an underestimation of the daily traffic, therefore also the remaining runtime and the business impact.</li>
-                            <li><span class="badge-new">NEW</span> <strong>Projected end date now shows the end of the next week cycle</strong> This is a more accurate estimate of when the experiment will end, and is more useful for planning.</li>
-                            <li><span class="badge-new">NEW</span> <strong>Days remaining added </strong> so that now we see not only the end date, but how far away this is from today.</li>
-                            <li><span class="badge-new">NEW</span> <strong>Easier initial setup</strong> when you select one of the most common metrics as primary, it defaults the rest of the most common to your secondaries (you can edit them of course).</li>
-                            <li><span class="badge-new">NEW</span> Minor bugfix: The business impact calculation was showing the metric ID number, fixed this to show the metric <i>name</i> instead.</li>
-                            <li><span class="badge-new">NEW</span> Minor bugfix: When editing an exp, the bayesian metric checks are now properly updated.</li>
-                            <li><span class="badge-new">NEW</span> Minor UI tweak: Font colours tweaked on experiment cards, to emphasise the values.</li>
+                            <li><strong>All metrics (including Revenue) are now properly divided by visitors.</strong> So orders metric is equivalent to conversion, Revenue metric is equivalent to RPV.</li>
+                            <li><strong>More accurate traffic/runtime estimation</strong> We no longer count first exp day and current day inclusive - this was leading to an overestimation of the runtime so far, which lead to an underestimation of the daily traffic, therefore also the remaining runtime and the business impact.</li>
+                            <li><strong>Projected end date now shows the end of the next week cycle</strong> This is a more accurate estimate of when the experiment will end, and is more useful for planning.</li>
+                            <li><strong>Days remaining added </strong> so that now we see not only the end date, but how far away this is from today.</li>
+                            <li><strong>Easier initial setup</strong> when you select one of the most common metrics as primary, it defaults the rest of the most common to your secondaries (you can edit them of course).</li>
+                            <li>Minor bugfix: The business impact calculation was showing the metric ID number, fixed this to show the metric <i>name</i> instead.</li>
+                            <li>Minor bugfix: When editing an exp, the bayesian metric checks are now properly updated.</li>
+                            <li>Minor UI tweak: Font colours tweaked on experiment cards, to emphasise the values.</li>
                         </ul>
                         <p><strong>Rolled out August 14th 2025</strong></p>
                         <ul>
