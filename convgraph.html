@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB Test Analyser | Secure & Local | beta</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #007bff; --success: #28a745; --  : #dc3545; --bg: #f8f9fa; }
+        body { font-family: -apple-system, system-ui, sans-serif; margin: 0; background: var(--bg); color: #212529; overflow-x: hidden; }
+        
+        /* Privacy Banner */
+        .privacy-banner { 
+            background: #e7f3ff; border: 1px solid #b6d4fe; padding: 12px; 
+            border-radius: 8px; margin: 2rem 2rem 2rem 2rem; display: flex; align-items: center; gap: 10px;
+        }
+        .privacy-banner svg { fill: #084298; flex-shrink: 0; }
+        .privacy-text { color: #084298; font-size: 0.9rem; margin: 0; }
+
+        .container { width: 100%; padding: 2.5rem; background: white; box-sizing: border-box; }
+        .content { max-width: 100%; margin: auto; }
+        textarea { width: 100%; height: 175px; margin-bottom: 1rem; padding: 12px; border: 1px solid #dee2e6; border-radius: 6px; font-family: monospace; font-size: 13px; box-sizing: border-box; }
+        
+        .controls { display: flex; gap: 10px; margin-bottom: 2rem; }
+        button { border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: filter 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #e2e6ea; color: #333; }
+        button:hover { filter: brightness(90%); }
+
+        .chart-section { 
+            margin: 0; 
+            padding: 0; 
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .chart-container { position: relative; height: 380px; }
+        h2 { font-size: 1.4rem; margin-bottom: 0.5rem; color: #333; }
+        .explanation { font-size: 0.85rem; color: #6c757d; margin-bottom: 1rem; }
+        
+        #chartsContainer {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (min-width: 1100px) {
+            #chartsContainer {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="privacy-banner">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+    <p class="privacy-text">
+        <strong>Confidentiality Note:</strong> All data processing happens 100% locally in your browser. 
+        No data is uploaded to a server or sent externally.
+    </p>
+</div>
+
+<div class="container">
+    <div class="content">
+        <h1>A/B Test Performance Analyser - beta</h1>
+        <p class="explanation">Paste tab-separated data. First column must be a date. State is saved in your browser's local storage.</p>
+    
+    <textarea id="dataInput" placeholder="2025-12-09	2474	2547	203	222..."></textarea>
+    
+    <div class="controls">
+        <button class="btn-primary" onclick="processData()">Analyze Data</button>
+        <button class="btn-secondary" onclick="clearData()">Clear Storage</button>
+    </div>
+
+    <div id="errorMessage" style="display: none; background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-top: 1rem;"></div>
+
+    <div id="seriesConfig" style="display: none; margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        <h3 style="margin-top: 0; font-size: 1.1rem;">Configure Series to Graph</h3>
+        <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 1rem;">Select up to 2 series to display. Each can be a direct column or a ratio.</p>
+        
+        <div style="display: grid; gap: 1rem;">
+            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Series 1:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="series1Type" onchange="updateSeriesInputs(1)" style="padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+                        <option value="">None</option>
+                        <option value="column">Direct Column</option>
+                        <option value="ratio">Ratio (Column ÷ Column)</option>
+                    </select>
+                    <div id="series1Inputs"></div>
+                </div>
+                <input type="text" id="series1Label" placeholder="Label (optional)" style="margin-top: 8px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; width: 200px;">
+                <input type="color" id="series1Color" value="#007bff" style="margin-left: 8px; height: 34px; border: 1px solid #dee2e6; border-radius: 4px;">
+            </div>
+            
+            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Series 2:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="series2Type" onchange="updateSeriesInputs(2)" style="padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+                        <option value="">None</option>
+                        <option value="column">Direct Column</option>
+                        <option value="ratio">Ratio (Column ÷ Column)</option>
+                    </select>
+                    <div id="series2Inputs"></div>
+                </div>
+                <input type="text" id="series2Label" placeholder="Label (optional)" style="margin-top: 8px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; width: 200px;">
+                <input type="color" id="series2Color" value="#28a745" style="margin-left: 8px; height: 34px; border: 1px solid #dee2e6; border-radius: 4px;">
+            </div>
+        </div>
+        
+        <button class="btn-primary" onclick="applyConfiguration()" style="margin-top: 1rem;">Apply & Update Charts</button>
+    </div>
+
+    <div id="chartsContainer" class="hidden">
+        <!-- First row: day-by-day and cumulative -->
+        <div class="chart-section">
+            <h2>Conversion Rate day-by-day</h2>
+            <p class="explanation">Displaying your configured data series.</p>
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section" id="cumulativeSection" style="display: none;">
+            <h2>Cumulative Conversion Rate (%)</h2>
+            <p class="explanation">Running cumulative conversion rate over time, showing how the rate stabilizes as more data is collected.</p>
+            <div class="chart-container">
+                <canvas id="cumulativeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section" id="cumulativeNotAvailable" style="display: none;">
+            <h2>Cumulative Conversion Rate</h2>
+            <p class="explanation" style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 6px; border: 1px solid #ffeaa7;">
+                <strong>Note:</strong> Cumulative conversion rate is only available when both series are calculated as ratios (e.g., conversions ÷ visits). 
+                When using direct column values, we cannot accurately compute cumulative rates without the underlying raw data.
+            </p>
+        </div>
+
+        <!-- Second row: day-by-day delta and cumulative delta -->
+        <div class="chart-section" id="liftSection" style="display: none;">
+            <h2 id="liftTitle">Relative Lift %</h2>
+            <p class="explanation" id="liftDescription">Shows the percentage difference between the two series. If the shaded 95% confidence region is entirely above/below 0%, the difference is statistically significant.</p>
+            
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 1rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Baseline:</label>
+                <div style="display: flex; gap: 20px;">
+                    <label style="cursor: pointer; font-size: 0.9rem;">
+                        <input type="radio" name="liftBase" value="1" checked style="margin-right: 5px;" onchange="applyConfiguration()">
+                        <span id="series1BaseLabel">Series 1</span> as base
+                    </label>
+                    <label style="cursor: pointer; font-size: 0.9rem;">
+                        <input type="radio" name="liftBase" value="2" style="margin-right: 5px;" onchange="applyConfiguration()">
+                        <span id="series2BaseLabel">Series 2</span> as base
+                    </label>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="liftChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section" id="cumulativeLiftSection" style="display: none;">
+            <h2 id="cumulativeLiftTitle">Cumulative Relative Lift %</h2>
+            <p class="explanation" id="cumulativeLiftDescription">Shows how the cumulative percentage difference evolves over time as more data is collected.</p>
+            <div class="chart-container">
+                <canvas id="cumulativeLiftChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let mainChart, cumulativeChart, liftChart, cumulativeLiftChart;
+let parsedData = null;
+let columnCount = 0;
+let resizeTimer = null;
+let resizeEventCount = 0;
+let resizeHandledCount = 0;
+
+window.onload = function() {
+    const savedData = localStorage.getItem('abTestData');
+    if (savedData) {
+        document.getElementById('dataInput').value = savedData;
+        processData();
+    }
+    
+    // Handle viewport resize with debounce and logging
+    window.addEventListener('resize', () => {
+        resizeEventCount++;
+        console.log(`[RESIZE EVENT #${resizeEventCount}] Fired - waiting for debounce...`);
+        
+        if (resizeTimer) {
+            console.log(`[RESIZE EVENT #${resizeEventCount}] Cancelled previous timer`);
+            clearTimeout(resizeTimer);
+        }
+        
+        resizeTimer = setTimeout(() => {
+            resizeHandledCount++;
+            const viewportWidth = window.innerWidth;
+            const gridColumns = viewportWidth >= 1100 ? 2 : 1;
+            
+            console.log(`[RESIZE HANDLED #${resizeHandledCount}] Debounce complete, redrawing charts...`);
+            console.log(`  Viewport width: ${viewportWidth}px, Expected grid columns: ${gridColumns}`);
+            console.log(`  Total events: ${resizeEventCount}, Handled: ${resizeHandledCount}, Skipped: ${resizeEventCount - resizeHandledCount}`);
+            
+            // Check if we have data and configuration to redraw
+            if (parsedData && localStorage.getItem('seriesConfig')) {
+                console.log(`  Triggering applyConfiguration() to redraw charts...`);
+                applyConfiguration();
+            } else {
+                console.log(`  No data or config available, skipping redraw`);
+            }
+            
+            console.log(`[RESIZE COMPLETE #${resizeHandledCount}] Charts redrawn`);
+        }, 150);
+    });
+};
+
+function clearData() {
+    if(confirm("Clear local storage? This will reset the page.")) {
+        localStorage.removeItem('abTestData');
+        localStorage.removeItem('seriesConfig');
+        document.getElementById('dataInput').value = '';
+        location.reload();
+    }
+}
+
+function isValidDate(dateString) {
+    // Check common date formats: YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY, etc.
+    const datePatterns = [
+        /^\d{4}-\d{2}-\d{2}$/,  // YYYY-MM-DD
+        /^\d{2}\/\d{2}\/\d{4}$/, // MM/DD/YYYY or DD/MM/YYYY
+        /^\d{2}-\d{2}-\d{4}$/,   // MM-DD-YYYY or DD-MM-YYYY
+        /^\d{4}\/\d{2}\/\d{2}$/  // YYYY/MM/DD
+    ];
+    
+    if (!datePatterns.some(pattern => pattern.test(dateString))) {
+        return false;
+    }
+    
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date);
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    document.getElementById('seriesConfig').style.display = 'none';
+    document.getElementById('chartsContainer').style.display = 'none';
+}
+
+function hideError() {
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+function processData() {
+    const input = document.getElementById('dataInput').value.trim();
+    if (!input) return;
+
+    hideError();
+    localStorage.setItem('abTestData', input);
+    
+    // Clear saved configuration to force re-analysis
+    localStorage.removeItem('seriesConfig');
+    
+    // Destroy existing charts
+    if (mainChart) mainChart.destroy();
+    if (cumulativeChart) cumulativeChart.destroy();
+    if (liftChart) liftChart.destroy();
+    if (cumulativeLiftChart) cumulativeLiftChart.destroy();
+
+    const lines = input.split('\n').filter(line => line.trim());
+    if (lines.length === 0) {
+        showError('No data provided');
+        return;
+    }
+
+    // Parse first line to check structure
+    const firstLine = lines[0].split('\t');
+    
+    // Validate first column is a date
+    if (!isValidDate(firstLine[0])) {
+        showError('Error: First column must be a date (e.g., YYYY-MM-DD, MM/DD/YYYY)');
+        return;
+    }
+
+    columnCount = firstLine.length - 1; // Exclude date column
+
+    // Parse all data
+    parsedData = {
+        labels: [],
+        columns: Array(columnCount).fill(null).map(() => [])
+    };
+
+    lines.forEach(line => {
+        const cols = line.split('\t');
+        if (cols.length !== firstLine.length) return; // Skip malformed lines
+        
+        parsedData.labels.push(cols[0]);
+        for (let i = 1; i < cols.length; i++) {
+            parsedData.columns[i-1].push(parseFloat(cols[i]) || 0);
+        }
+    });
+
+    // Show configuration panel
+    setupConfiguration();
+    document.getElementById('chartsContainer').classList.remove('hidden');
+}
+
+function setupConfiguration() {
+    const configDiv = document.getElementById('seriesConfig');
+    configDiv.style.display = 'block';
+
+    // Check for saved configuration
+    const savedConfig = localStorage.getItem('seriesConfig');
+    let config = savedConfig ? JSON.parse(savedConfig) : null;
+    
+    // Load lift base preference - default to '1' (Control/Series 1)
+    const savedLiftBase = localStorage.getItem('liftBase') || '1';
+    const liftBaseRadios = document.getElementsByName('liftBase');
+    liftBaseRadios.forEach(radio => {
+        radio.checked = radio.value === savedLiftBase;
+    });
+
+    // Apply default behavior based on column count
+    if (!config) {
+        if (columnCount === 2) {
+            // Default: graph both columns (first = control, second = variant)
+            config = {
+                series1: { type: 'column', column: 0, label: 'Control', color: '#6c757d' },
+                series2: { type: 'column', column: 1, label: 'Variant', color: '#007bff' }
+            };
+        } else if (columnCount === 4) {
+            // Default: col4/col2 (control) and col5/col3 (variant)
+            config = {
+                series1: { type: 'ratio', numerator: 2, denominator: 0, label: 'Control', color: '#6c757d' },
+                series2: { type: 'ratio', numerator: 3, denominator: 1, label: 'Variant', color: '#007bff' }
+            };
+        } else {
+            // No defaults for other counts
+            config = {
+                series1: { type: '', color: '#007bff' },
+                series2: { type: '', color: '#28a745' }
+            };
+        }
+    }
+
+    // Populate UI with config
+    applyConfigToUI(config);
+    
+    // If we have valid config, render charts
+    if (config.series1.type || config.series2.type) {
+        renderCharts(config);
+    }
+}
+
+function applyConfigToUI(config) {
+    // Series 1
+    document.getElementById('series1Type').value = config.series1.type || '';
+    document.getElementById('series1Label').value = config.series1.label || '';
+    document.getElementById('series1Color').value = config.series1.color || '#007bff';
+    updateSeriesInputs(1);
+    
+    if (config.series1.type === 'column' && config.series1.column !== undefined) {
+        document.getElementById('series1Col').value = config.series1.column;
+    } else if (config.series1.type === 'ratio') {
+        document.getElementById('series1Num').value = config.series1.numerator;
+        document.getElementById('series1Denom').value = config.series1.denominator;
+    }
+
+    // Series 2
+    document.getElementById('series2Type').value = config.series2.type || '';
+    document.getElementById('series2Label').value = config.series2.label || '';
+    document.getElementById('series2Color').value = config.series2.color || '#28a745';
+    updateSeriesInputs(2);
+    
+    if (config.series2.type === 'column' && config.series2.column !== undefined) {
+        document.getElementById('series2Col').value = config.series2.column;
+    } else if (config.series2.type === 'ratio') {
+        document.getElementById('series2Num').value = config.series2.numerator;
+        document.getElementById('series2Denom').value = config.series2.denominator;
+    }
+}
+
+function updateSeriesInputs(seriesNum) {
+    const type = document.getElementById(`series${seriesNum}Type`).value;
+    const inputsDiv = document.getElementById(`series${seriesNum}Inputs`);
+    
+    if (type === 'column') {
+        inputsDiv.innerHTML = `
+            <select id="series${seriesNum}Col" style="padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+                ${Array(columnCount).fill(0).map((_, i) => 
+                    `<option value="${i}">Column ${i + 2}</option>`
+                ).join('')}
+            </select>
+        `;
+    } else if (type === 'ratio') {
+        inputsDiv.innerHTML = `
+            <select id="series${seriesNum}Num" style="padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+                ${Array(columnCount).fill(0).map((_, i) => 
+                    `<option value="${i}">Col ${i + 2}</option>`
+                ).join('')}
+            </select>
+            <span style="font-weight: bold;">÷</span>
+            <select id="series${seriesNum}Denom" style="padding: 8px; border: 1px solid #dee2e6; border-radius: 4px;">
+                ${Array(columnCount).fill(0).map((_, i) => 
+                    `<option value="${i}">Col ${i + 2}</option>`
+                ).join('')}
+            </select>
+        `;
+    } else {
+        inputsDiv.innerHTML = '';
+    }
+}
+
+function applyConfiguration() {
+    const config = {
+        series1: getSeriesConfig(1),
+        series2: getSeriesConfig(2)
+    };
+
+    if (!config.series1.type && !config.series2.type) {
+        showError('Please configure at least one series');
+        return;
+    }
+
+    // Save lift base preference
+    const liftBase = document.querySelector('input[name="liftBase"]:checked')?.value || '1';
+    localStorage.setItem('liftBase', liftBase);
+
+    localStorage.setItem('seriesConfig', JSON.stringify(config));
+    renderCharts(config);
+}
+
+function getSeriesConfig(seriesNum) {
+    const type = document.getElementById(`series${seriesNum}Type`).value;
+    const label = document.getElementById(`series${seriesNum}Label`).value;
+    const color = document.getElementById(`series${seriesNum}Color`).value;
+    
+    const config = { type, label, color };
+    
+    if (type === 'column') {
+        config.column = parseInt(document.getElementById(`series${seriesNum}Col`).value);
+    } else if (type === 'ratio') {
+        config.numerator = parseInt(document.getElementById(`series${seriesNum}Num`).value);
+        config.denominator = parseInt(document.getElementById(`series${seriesNum}Denom`).value);
+    }
+    
+    return config;
+}
+
+function calculateSeries(config) {
+    if (config.type === 'column') {
+        return parsedData.columns[config.column];
+    } else if (config.type === 'ratio') {
+        const num = parsedData.columns[config.numerator];
+        const denom = parsedData.columns[config.denominator];
+        return num.map((n, i) => denom[i] !== 0 ? (n / denom[i] * 100) : 0);
+    }
+    return [];
+}
+
+function renderCharts(config) {
+    if (mainChart) mainChart.destroy();
+    if (cumulativeChart) cumulativeChart.destroy();
+    if (liftChart) liftChart.destroy();
+    if (cumulativeLiftChart) cumulativeLiftChart.destroy();
+
+    const datasets = [];
+    let series1Data = null;
+    let series2Data = null;
+    
+    if (config.series1.type) {
+        series1Data = calculateSeries(config.series1);
+        const label = config.series1.label || `Series 1`;
+        datasets.push({
+            label: label,
+            data: series1Data,
+            borderColor: config.series1.color,
+            backgroundColor: config.series1.color + '20',
+            borderWidth: 2,
+            tension: 0.1
+        });
+    }
+    
+    if (config.series2.type) {
+        series2Data = calculateSeries(config.series2);
+        const label = config.series2.label || `Series 2`;
+        datasets.push({
+            label: label,
+            data: series2Data,
+            borderColor: config.series2.color,
+            backgroundColor: config.series2.color + '20',
+            borderWidth: 2,
+            tension: 0.1
+        });
+    }
+
+    document.getElementById('chartsContainer').classList.remove('hidden');
+
+    mainChart = new Chart(document.getElementById('mainChart'), {
+        type: 'line',
+        data: {
+            labels: parsedData.labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y.toFixed(2);
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        color: '#e9ecef'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Render cumulative chart only if both series are ratios (we have raw data to sum)
+    if (series1Data && series2Data && config.series1.type === 'ratio' && config.series2.type === 'ratio') {
+        document.getElementById('cumulativeSection').style.display = 'block';
+        
+        const cumulative1 = [];
+        const cumulative2 = [];
+        
+        // Calculate cumulative conversion rates from raw data
+        let sumNum1 = 0, sumDenom1 = 0;
+        parsedData.columns[config.series1.numerator].forEach((num, i) => {
+            sumNum1 += num;
+            sumDenom1 += parsedData.columns[config.series1.denominator][i];
+            const rate = sumDenom1 !== 0 ? (sumNum1 / sumDenom1 * 100) : 0;
+            cumulative1.push(rate);
+        });
+        
+        let sumNum2 = 0, sumDenom2 = 0;
+        parsedData.columns[config.series2.numerator].forEach((num, i) => {
+            sumNum2 += num;
+            sumDenom2 += parsedData.columns[config.series2.denominator][i];
+            const rate = sumDenom2 !== 0 ? (sumNum2 / sumDenom2 * 100) : 0;
+            cumulative2.push(rate);
+        });
+        
+        cumulativeChart = new Chart(document.getElementById('cumulativeChart'), {
+            type: 'line',
+            data: {
+                labels: parsedData.labels,
+                datasets: [
+                    {
+                        label: config.series1.label || 'Series 1 (Cumulative)',
+                        data: cumulative1,
+                        borderColor: config.series1.color,
+                        backgroundColor: config.series1.color + '20',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: false
+                    },
+                    {
+                        label: config.series2.label || 'Series 2 (Cumulative)',
+                        data: cumulative2,
+                        borderColor: config.series2.color,
+                        backgroundColor: config.series2.color + '20',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#e9ecef' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('cumulativeSection').style.display = 'none';
+    }
+
+    // Render lift chart (percentage difference) - show for both ratios AND direct columns
+    if (series1Data && series2Data) {
+        document.getElementById('liftSection').style.display = 'block';
+        
+        // Update baseline labels with actual series names
+        document.getElementById('series1BaseLabel').textContent = config.series1.label || 'Series 1';
+        document.getElementById('series2BaseLabel').textContent = config.series2.label || 'Series 2';
+            
+            // Determine which series is the base
+            const liftBase = localStorage.getItem('liftBase') || '1';
+            const baseData = liftBase === '1' ? series1Data : series2Data;
+            const compareData = liftBase === '1' ? series2Data : series1Data;
+            const baseLabel = liftBase === '1' ? (config.series1.label || 'Series 1') : (config.series2.label || 'Series 2');
+            const compareLabel = liftBase === '1' ? (config.series2.label || 'Series 2') : (config.series1.label || 'Series 1');
+            
+            // Update title and description
+            document.getElementById('liftTitle').textContent = `Relative Lift % (${compareLabel} vs ${baseLabel})`;
+            document.getElementById('liftDescription').textContent = `Shows the percentage difference of ${compareLabel} relative to ${baseLabel}. If the shaded 95% confidence region is entirely above/below 0%, the difference is statistically significant.`;
+            
+            const liftData = [];
+            const liftUpper = [];
+            const liftLower = [];
+            const Z = 1.96; // 95% confidence
+            
+            baseData.forEach((baseVal, i) => {
+                const compareVal = compareData[i];
+                if (baseVal !== 0) {
+                    const lift = ((compareVal - baseVal) / baseVal) * 100;
+                    // Simple standard error approximation
+                    const se = Math.abs(lift) * 0.15; // Rough approximation
+                    const moe = Z * se;
+                    
+                    liftData.push(lift.toFixed(2));
+                    liftUpper.push((lift + moe).toFixed(2));
+                    liftLower.push((lift - moe).toFixed(2));
+                } else {
+                    liftData.push(0);
+                    liftUpper.push(0);
+                    liftLower.push(0);
+                }
+            });
+            
+            liftChart = new Chart(document.getElementById('liftChart'), {
+                type: 'line',
+                data: {
+                    labels: parsedData.labels,
+                    datasets: [
+                        {
+                            label: 'Lift %',
+                            data: liftData,
+                            borderColor: '#007bff',
+                            borderWidth: 3,
+                            fill: false,
+                            z: 10
+                        },
+                        {
+                            label: 'Upper CI',
+                            data: liftUpper,
+                            fill: '+1',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            borderWidth: 0,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Lower CI',
+                            data: liftLower,
+                            fill: false,
+                            borderWidth: 0,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: (c) => c.tick.value === 0 ? '#dc3545' : '#e9ecef'
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                filter: (item) => !['Upper CI', 'Lower CI'].includes(item.text)
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('liftSection').style.display = 'none';
+        }
+    
+    // Render cumulative lift chart only if both series are ratios
+    if (series1Data && series2Data && config.series1.type === 'ratio' && config.series2.type === 'ratio') {
+        document.getElementById('cumulativeLiftSection').style.display = 'block';
+        
+        // Determine which series is the base
+        const liftBase = localStorage.getItem('liftBase') || '1';
+        const baseLabel = liftBase === '1' ? (config.series1.label || 'Series 1') : (config.series2.label || 'Series 2');
+        const compareLabel = liftBase === '1' ? (config.series2.label || 'Series 2') : (config.series1.label || 'Series 1');
+        
+        // Update title and description
+        document.getElementById('cumulativeLiftTitle').textContent = `Cumulative Relative Lift % (${compareLabel} vs ${baseLabel})`;
+        document.getElementById('cumulativeLiftDescription').textContent = `Shows how the cumulative percentage difference of ${compareLabel} relative to ${baseLabel} evolves over time.`;
+        
+        const cumulativeLiftData = [];
+        const cumulativeLiftUpper = [];
+        const cumulativeLiftLower = [];
+        const Z = 1.96; // 95% confidence
+        
+        // Get the config for base and compare series
+        const baseConfig = liftBase === '1' ? config.series1 : config.series2;
+        const compareConfig = liftBase === '1' ? config.series2 : config.series1;
+        
+        // Calculate cumulative lift based on cumulative conversion rates
+        let sumNumBase = 0, sumDenomBase = 0;
+        let sumNumCompare = 0, sumDenomCompare = 0;
+        
+        parsedData.columns[baseConfig.numerator].forEach((num, i) => {
+            sumNumBase += num;
+            sumDenomBase += parsedData.columns[baseConfig.denominator][i];
+            sumNumCompare += parsedData.columns[compareConfig.numerator][i];
+            sumDenomCompare += parsedData.columns[compareConfig.denominator][i];
+            
+            const rateBase = sumDenomBase !== 0 ? (sumNumBase / sumDenomBase) : 0;
+            const rateCompare = sumDenomCompare !== 0 ? (sumNumCompare / sumDenomCompare) : 0;
+            
+            if (rateBase !== 0) {
+                const lift = ((rateCompare - rateBase) / rateBase) * 100;
+                
+                // Calculate standard error for cumulative conversion rates
+                const seBase = Math.sqrt(rateBase * (1 - rateBase) / sumDenomBase);
+                const seCompare = Math.sqrt(rateCompare * (1 - rateCompare) / sumDenomCompare);
+                const seDiff = Math.sqrt(seBase * seBase + seCompare * seCompare);
+                const moe = (Z * seDiff / rateBase) * 100;
+                
+                cumulativeLiftData.push(lift.toFixed(2));
+                cumulativeLiftUpper.push((lift + moe).toFixed(2));
+                cumulativeLiftLower.push((lift - moe).toFixed(2));
+            } else {
+                cumulativeLiftData.push(0);
+                cumulativeLiftUpper.push(0);
+                cumulativeLiftLower.push(0);
+            }
+        });
+        
+        cumulativeLiftChart = new Chart(document.getElementById('cumulativeLiftChart'), {
+            type: 'line',
+            data: {
+                labels: parsedData.labels,
+                datasets: [
+                    {
+                        label: 'Cumulative Lift %',
+                        data: cumulativeLiftData,
+                        borderColor: '#28a745',
+                        borderWidth: 3,
+                        fill: false,
+                        z: 10
+                    },
+                    {
+                        label: 'Upper CI',
+                        data: cumulativeLiftUpper,
+                        fill: '+1',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderWidth: 0,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Lower CI',
+                        data: cumulativeLiftLower,
+                        fill: false,
+                        borderWidth: 0,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        grid: {
+                            color: (c) => c.tick.value === 0 ? '#dc3545' : '#e9ecef'
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            filter: (item) => !['Upper CI', 'Lower CI'].includes(item.text)
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('cumulativeLiftSection').style.display = 'none';
+    }
+    
+    // Show/hide cumulative availability message
+    if (!series1Data || !series2Data || config.series1.type !== 'ratio' || config.series2.type !== 'ratio') {
+        document.getElementById('cumulativeSection').style.display = 'none';
+        // Show explanatory message if we have both series but they're not both ratios
+        if (series1Data && series2Data && (config.series1.type !== 'ratio' || config.series2.type !== 'ratio')) {
+            document.getElementById('cumulativeNotAvailable').style.display = 'block';
+        } else {
+            document.getElementById('cumulativeNotAvailable').style.display = 'none';
+        }
+    } else {
+        document.getElementById('cumulativeNotAvailable').style.display = 'none';
+    }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,10 @@
 // Main application logic for ATP Experiment Analysis Tool
 // Last updated: 2025-01-22 17:45:00 - Primary KPI typeahead fix attempt
+<<<<<<< HEAD
 console.log("Main.js loaded");
+=======
+
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 // Application state
 let currentExperiment = {
     atp: null,
@@ -22,7 +26,11 @@ function isDeveloperModeActive() {
         localStorage.setItem('debugTimestamp', debugTimestamp);
     }
 
+<<<<<<< HEAD
     const endTimeInMillis = 2 * 24 * 60 * 60 * 1000; //two days in milliseconds
+=======
+    const endTimeInMillis = 3 * 24 * 60 * 60 * 1000; //Three days in milliseconds
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const timeSinceEnabled = Date.now() - parseInt(debugTimestamp, 10);
 
     if (timeSinceEnabled > endTimeInMillis) {
@@ -48,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSavedExperiments();
     });
     
+<<<<<<< HEAD
     // Setup status filter dropdown
     document.getElementById('statusFilter').addEventListener('change', () => {
         loadSavedExperiments();
@@ -61,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup bulk cleanup button
     setupBulkCleanup();
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     // Show/hide debug options based on localStorage
     const debugMode = isDeveloperModeActive();
     const businessImpactOption = document.getElementById('business-impact-option');
@@ -168,8 +179,11 @@ function setupFileHandling() {
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleMultipleFileUpload(e.target.files);
+<<<<<<< HEAD
             // Reset the file input value to allow the same file to be uploaded again
             e.target.value = '';
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         }
     });
 }
@@ -232,6 +246,7 @@ function handleMultipleFileUpload(files) {
                 if (existingConfig && existingConfig.needsConfig !== true) {
                     // Configuration exists and is complete - update with new data
                     saveConfigurationWithMetrics(csvData.atpNumber, existingConfig, csvData.data, csvData.globalVisits, csvData.csvDateInfo);
+<<<<<<< HEAD
                     
                     successCount++;
                     lastProcessedAtp = csvData.atpNumber; // Track for potential display
@@ -239,6 +254,14 @@ function handleMultipleFileUpload(files) {
                     // No configuration exists - create a basic config with processed filename as name
                     const basicConfig = {
                         name: processFilenameToExperimentName(file.name, csvData.atpNumber),
+=======
+                    successCount++;
+                    lastProcessedAtp = csvData.atpNumber; // Track for potential display
+                } else {
+                    // No configuration exists - create a basic config with ATP number as name
+                    const basicConfig = {
+                        name: csvData.atpNumber,
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                         primary: '',
                         secondary: [],
                         sampleSize: 10000,
@@ -249,9 +272,12 @@ function handleMultipleFileUpload(files) {
                     };
                     
                     saveConfigurationWithMetrics(csvData.atpNumber, basicConfig, csvData.data, csvData.globalVisits, csvData.csvDateInfo);
+<<<<<<< HEAD
                     
                     // Note: Business impact cannot be calculated for new configs since primary metric is not set yet
                     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                     successCount++;
                     lastProcessedAtp = csvData.atpNumber; // Track for potential display
                 }
@@ -368,11 +394,16 @@ function processCSVData(csvText, filename = '') {
     // Extract unique metrics for the configuration screen
     const metrics = [...new Set(data.map(item => item.label))];
     
+<<<<<<< HEAD
     // Convert data format to match expected structure with multi-variant support
+=======
+    // Convert data format to match expected structure
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const processedData = data.map(item => ({
         label: item.label,
         section: item.section,
         control: item.valA,
+<<<<<<< HEAD
         variant: item.valB, // Keep for backward compatibility
         variantB: item.valB,
         variantC: item.valC,
@@ -382,6 +413,11 @@ function processCSVData(csvText, filename = '') {
         variantBVisits: item.variantBVisits,
         variantCVisits: item.variantCVisits,
         variantDVisits: item.variantDVisits
+=======
+        variant: item.valB,
+        controlVisits: item.controlVisits,
+        variantVisits: item.variantVisits
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     }));
     
     return {
@@ -431,16 +467,29 @@ function extractStartDateFromCSV(csvText) {
     return null;
 }
 
+<<<<<<< HEAD
 // Original working CSV parsing function with multi-variant support
 function parseCSVData(csvText) {
     // Use comma separator for CSV files
     const separator = ',';
+=======
+// Original working CSV parsing function
+function parseCSVData(csvText) {
+    // Detect if data is tab-separated (TSV) or comma-separated (CSV)
+    const firstFewLines = csvText.split('\n').slice(0, 5).join('\n');
+    const tabCount = (firstFewLines.match(/\t/g) || []).length;
+    const commaCount = (firstFewLines.match(/,/g) || []).length;
+
+    // Use tabs if there are more tabs than commas, otherwise use commas
+    const separator = tabCount > commaCount ? '\t' : ',';
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const rows = csvText.split('\n').map(r => r.split(separator).map(cell => cell.trim().replace(/"/g, '')));
 
     let data = [];
     let currentSectionVisits = null;
     let currentSection = '';
     let globalVisits = null;
+<<<<<<< HEAD
     let variantCount = 2; // Default to 2 variants (control + 1 variant)
 
     // Detect number of variants from header rows
@@ -463,6 +512,8 @@ function parseCSVData(csvText) {
     }
 
     console.log(`Detected ${variantCount} variants (including control)`);
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
@@ -474,6 +525,7 @@ function parseCSVData(csvText) {
             continue;
         }
 
+<<<<<<< HEAD
         // Handle multi-variant CSV formats (3+ columns)
         let prefix, label, values = [];
 
@@ -496,6 +548,24 @@ function parseCSVData(csvText) {
                     currentSectionVisits = visits;
                     if (!globalVisits) {
                         globalVisits = visits;
+=======
+        // Handle both 3-column and 4-column CSV formats
+        let prefix, label, valA, valB;
+
+        if (row.length === 4) {
+            prefix = row[0];
+            label = row[1];
+            valA = parseFloat(row[2]);
+            valB = parseFloat(row[3]);
+
+            if (prefix === 'Segments') {
+                const controlVisits = parseInt(row[2]);
+                const variantVisits = parseInt(row[3]);
+                if (!isNaN(controlVisits) && !isNaN(variantVisits)) {
+                    currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                    if (!globalVisits) {
+                        globalVisits = { control: controlVisits, variant: variantVisits };
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                     }
                 }
                 continue;
@@ -505,6 +575,7 @@ function parseCSVData(csvText) {
                 continue;
             }
 
+<<<<<<< HEAD
         } else if (row.length >= variantCount) {
             // Format: label, valA, valB, valC, valD...
             prefix = '';
@@ -524,11 +595,27 @@ function parseCSVData(csvText) {
                     currentSectionVisits = visits;
                     if (!globalVisits) {
                         globalVisits = visits;
+=======
+        } else if (row.length === 3) {
+            prefix = '';
+            label = row[0];
+            valA = parseFloat(row[1]);
+            valB = parseFloat(row[2]);
+
+            if (label === 'Segments') {
+                const controlVisits = parseInt(row[1]);
+                const variantVisits = parseInt(row[2]);
+                if (!isNaN(controlVisits) && !isNaN(variantVisits)) {
+                    currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                    if (!globalVisits) {
+                        globalVisits = { control: controlVisits, variant: variantVisits };
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                     }
                 }
                 continue;
             }
 
+<<<<<<< HEAD
                         // Check for CSV format where first row contains visit counts (All visits)
             if (label && (label.toLowerCase().includes('all visits') || label.startsWith('0.')) && 
                 values.length >= 2 && !isNaN(values[0]) && !isNaN(values[1])) {
@@ -544,11 +631,27 @@ function parseCSVData(csvText) {
                         globalVisits = visits;
                     }
                     console.log('CSV: Extracted visit counts from', label, '- Control:', visits.control, 'Variants:', visits);
+=======
+            // Check for TSV format where first row contains visit counts (All visits)
+            if (label && (label.toLowerCase().includes('all visits') || label.startsWith('0.')) && !isNaN(valA) && !isNaN(valB)) {
+                const controlVisits = parseInt(valA);
+                const variantVisits = parseInt(valB);
+                if (controlVisits > 0 && variantVisits > 0) {
+                    currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                    if (!globalVisits) {
+                        globalVisits = { control: controlVisits, variant: variantVisits };
+                    }
+                    console.log('TSV: Extracted visit counts from', label, '- Control:', controlVisits, 'Variant:', variantVisits);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 }
                 // Don't continue here - also process this as a metric
             }
 
+<<<<<<< HEAD
             if (label && label.startsWith('0 All Visits') && values.length >= 2 && !isNaN(values[0]) && !isNaN(values[1])) {
+=======
+            if (label && label.startsWith('0 All Visits') && !isNaN(valA) && !isNaN(valB)) {
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 continue;
             }
 
@@ -562,6 +665,7 @@ function parseCSVData(csvText) {
         }
 
         // Process valid metric rows
+<<<<<<< HEAD
         if (label && label !== "Metrics" && values.length >= 2 && 
             !isNaN(values[0]) && !isNaN(values[1]) && values[0] !== null && values[1] !== null) {
             
@@ -571,25 +675,41 @@ function parseCSVData(csvText) {
                 valB: values[1], // Variant B
                 valC: values.length > 2 ? values[2] : null, // Variant C
                 valD: values.length > 3 ? values[3] : null, // Variant D
+=======
+        if (label && label !== "Metrics" && !isNaN(valA) && !isNaN(valB) && valA !== null && valB !== null) {
+            const metricData = {
+                label,
+                valA,
+                valB,
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 hasBayesianData: false,
                 section: currentSection,
                 controlVisits: null,
                 controlConversions: null,
+<<<<<<< HEAD
                 variantBVisits: null,
                 variantBConversions: null,
                 variantCVisits: null,
                 variantCConversions: null,
                 variantDVisits: null,
                 variantDConversions: null
+=======
+                variantVisits: null,
+                variantConversions: null
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             };
 
             // Store visit data for potential Bayesian calculation
             if (currentSectionVisits || globalVisits) {
                 const visitsToUse = currentSectionVisits || globalVisits;
                 metricData.controlVisits = visitsToUse.control;
+<<<<<<< HEAD
                 if (visitsToUse.variantB) metricData.variantBVisits = visitsToUse.variantB;
                 if (visitsToUse.variantC) metricData.variantCVisits = visitsToUse.variantC;
                 if (visitsToUse.variantD) metricData.variantDVisits = visitsToUse.variantD;
+=======
+                metricData.variantVisits = visitsToUse.variant;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             }
 
             data.push(metricData);
@@ -646,7 +766,11 @@ function testFilenameProcessing() {
 }
 
 // Typeahead component for metric selection
+<<<<<<< HEAD
 function createTypeahead(containerId, options, selectedValue = '', placeholder = 'Select or type to search...', showMostSelected = false) {
+=======
+function createTypeahead(containerId, options, selectedValue = '', placeholder = 'Select or type to search...') {
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const container = document.getElementById(containerId);
     if (!container) return null;
     
@@ -682,7 +806,11 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         background: white;
         border: 1px solid #ddd;
         border-top: none;
+<<<<<<< HEAD
         max-height: 300px;
+=======
+        max-height: 200px;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         overflow-y: auto;
         display: none;
         z-index: 1000;
@@ -691,6 +819,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
     
     let filteredOptions = [...options];
     let selectedIndex = -1;
+<<<<<<< HEAD
     let allOptions = [...options]; // Keep original options for filtering
     
     // Function to render dropdown options with sections
@@ -729,18 +858,57 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
             option.toLowerCase().includes(searchTerm.toLowerCase())
         );
         
+=======
+    
+    // Function to render dropdown options
+    function renderDropdown(searchTerm = '') {
+        filteredOptions = options.filter(option => 
+            option.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        dropdown.innerHTML = '';
+        
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         if (filteredOptions.length === 0) {
             const noResults = document.createElement('div');
             noResults.textContent = 'No matches found';
             noResults.style.cssText = 'padding: 8px 12px; color: #666; font-style: italic;';
             dropdown.appendChild(noResults);
         } else {
+<<<<<<< HEAD
             // Calculate starting index for filtered options
             const startIndex = showMostSelected && !searchTerm ? 
                 (getMostCommonlySelectedMetrics().filter(metric => options.includes(metric)).length + 2) : 0;
             
             filteredOptions.forEach((option, index) => {
                 const item = createOptionItem(option, startIndex + index, searchTerm);
+=======
+            filteredOptions.forEach((option, index) => {
+                const item = document.createElement('div');
+                item.textContent = option;
+                item.className = 'typeahead-option';
+                item.style.cssText = `
+                    padding: 8px 12px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #f0f0f0;
+                `;
+                
+                // Highlight matching text
+                const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                item.innerHTML = option.replace(regex, '<strong>$1</strong>');
+                
+                item.addEventListener('mouseenter', () => {
+                    selectedIndex = index;
+                    updateSelection();
+                });
+                
+                item.addEventListener('click', () => {
+                    input.value = option;
+                    dropdown.style.display = 'none';
+                    input.dispatchEvent(new Event('change'));
+                });
+                
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 dropdown.appendChild(item);
             });
         }
@@ -749,6 +917,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         updateSelection();
     }
     
+<<<<<<< HEAD
     // Helper function to create option items
     function createOptionItem(option, index, searchTerm) {
         const item = document.createElement('div');
@@ -778,12 +947,18 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         return item;
     }
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     // Function to update visual selection
     function updateSelection() {
         const items = dropdown.querySelectorAll('.typeahead-option');
         items.forEach((item, index) => {
+<<<<<<< HEAD
             const actualIndex = getActualOptionIndex(selectedIndex);
             if (index === actualIndex) {
+=======
+            if (index === selectedIndex) {
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 item.style.backgroundColor = '#e3f2fd';
             } else {
                 item.style.backgroundColor = '';
@@ -791,6 +966,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         });
     }
     
+<<<<<<< HEAD
     // Function to get the actual option index (accounting for sections)
     function getActualOptionIndex(keyboardIndex) {
         if (!showMostSelected || keyboardIndex < 0) return keyboardIndex;
@@ -807,6 +983,8 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         return keyboardIndex - sectionOffset;
     }
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     // Event listeners
     input.addEventListener('focus', () => {
         renderDropdown(input.value);
@@ -821,6 +999,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
     input.addEventListener('keydown', (e) => {
         if (dropdown.style.display === 'none') return;
         
+<<<<<<< HEAD
         // Calculate total items including sections
         const mostSelectedCount = showMostSelected && !input.value ? 
             getMostCommonlySelectedMetrics().filter(metric => options.includes(metric)).length : 0;
@@ -831,6 +1010,12 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
             case 'ArrowDown':
                 e.preventDefault();
                 selectedIndex = Math.min(selectedIndex + 1, totalItems - 1);
+=======
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, filteredOptions.length - 1);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 updateSelection();
                 break;
             case 'ArrowUp':
@@ -840,6 +1025,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
                 break;
             case 'Enter':
                 e.preventDefault();
+<<<<<<< HEAD
                 if (selectedIndex >= 0) {
                     const actualIndex = getActualOptionIndex(selectedIndex);
                     if (actualIndex >= 0 && actualIndex < filteredOptions.length) {
@@ -847,6 +1033,12 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
                         dropdown.style.display = 'none';
                         input.dispatchEvent(new Event('change'));
                     }
+=======
+                if (selectedIndex >= 0 && selectedIndex < filteredOptions.length) {
+                    input.value = filteredOptions[selectedIndex];
+                    dropdown.style.display = 'none';
+                    input.dispatchEvent(new Event('change'));
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 }
                 break;
             case 'Escape':
@@ -948,19 +1140,29 @@ function showConfigurationScreen(atpNumber, metrics, csvDateInfo, filename = '')
     // Create typeahead after appending to DOM
     setTimeout(() => {
         console.log('Creating typeahead for ID:', primaryUniqueId);
+<<<<<<< HEAD
         const primaryTypeahead = createTypeahead(primaryUniqueId, metrics, primaryMetricName || '', 'Select or type primary KPI...', true);
+=======
+        const primaryTypeahead = createTypeahead(primaryUniqueId, metrics, primaryMetricName || '', 'Select or type primary KPI...');
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         console.log('Typeahead created:', primaryTypeahead);
         
         // Store reference for later access
         window.primaryTypeahead = primaryTypeahead;
         newPrimaryContainer.typeahead = primaryTypeahead;
         
+<<<<<<< HEAD
         // Add change listener for Bayesian options update and auto-populate secondary metrics
         if (primaryTypeahead) {
             primaryTypeahead.getInput().addEventListener('change', () => {
                 updateBayesianOptions();
                 autoPopulateSecondaryMetrics(metrics);
             });
+=======
+        // Add change listener for Bayesian options update
+        if (primaryTypeahead) {
+            primaryTypeahead.getInput().addEventListener('change', updateBayesianOptions);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         }
         updateBayesianOptions();
     }, 0);
@@ -968,11 +1170,14 @@ function showConfigurationScreen(atpNumber, metrics, csvDateInfo, filename = '')
     // Setup secondary KPIs
     setupSecondaryKPIs(metrics, secondaryMetricNames);
     
+<<<<<<< HEAD
     // Update Bayesian options after secondary KPIs are set up
     setTimeout(() => {
         updateBayesianOptions();
     }, 100);
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     // Show/hide delete button based on existing configuration
     const deleteBtn = document.getElementById('deleteConfig');
     if (existingConfig) {
@@ -982,6 +1187,10 @@ function showConfigurationScreen(atpNumber, metrics, csvDateInfo, filename = '')
     }
     
     Utils.showScreen('configSection');
+<<<<<<< HEAD
+=======
+    // updateBayesianOptions();
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 }
 
 // Setup secondary KPIs
@@ -1017,7 +1226,11 @@ function addSecondaryKPI(container, metrics, selectedValue) {
     
     // Create typeahead after appending to DOM
     setTimeout(() => {
+<<<<<<< HEAD
         const typeahead = createTypeahead(uniqueId, metrics, selectedValue || '', 'Select or type secondary KPI...', true);
+=======
+        const typeahead = createTypeahead(uniqueId, metrics, selectedValue || '', 'Select or type secondary KPI...');
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         
         // Store reference for later access
         div.typeahead = typeahead;
@@ -1064,6 +1277,7 @@ function ensureEmptySecondarySlot(container, metrics) {
     }
 }
 
+<<<<<<< HEAD
 // Dynamic detection functions for metric classification
 // Let's not hardcode lists, instead we do pattern-based detection
 
@@ -1108,6 +1322,20 @@ window.isContinuousMetric = isContinuousMetric;
 // These maintain backward compatibility for code that expects arrays
 window.alreadyAveragedMetrics = [];
 window.continuousMetrics = [];
+=======
+// Predefined list of continuous metrics that should NOT have Bayesian calculations by default
+//Everything that is NOT binomial should go in here
+window.continuousMetrics = [
+    "% QV Cart > Order (incl. C&C / within Visit) - SPR",
+    "%age of cart views SAMS",
+    "Average Order Value (incl. C&C) - SPR",
+    "Revenue per Visit (inc. C&C) - SPR",
+    "Average Selling Price (incl. C&C) - SPR",
+    "Average Units per Order (incl. C&C) - SPR",
+    "Conversion Rate (incl. Click & Collect)",
+    "Revenue (incl. C&C) - SPR"
+];
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 
 // Update Bayesian options
 function updateBayesianOptions() {
@@ -1124,6 +1352,7 @@ function updateBayesianOptions() {
     
     const allSelected = [primary, ...secondary].filter(Boolean);
     const existingConfig = loadConfiguration(currentExperiment.atp);
+<<<<<<< HEAD
     
     // Convert stored Bayesian metric IDs back to metric names for comparison
     let bayesianSelected = [];
@@ -1135,6 +1364,9 @@ function updateBayesianOptions() {
                 .filter(Boolean);
         }
     }
+=======
+    const bayesianSelected = existingConfig?.bayesian || [];
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     
     const container = document.getElementById('bayesianOptions');
     container.innerHTML = '';
@@ -1149,7 +1381,11 @@ function updateBayesianOptions() {
         
         // Check if this metric should be selected by default
         const shouldBeChecked = bayesianSelected.includes(metric) || 
+<<<<<<< HEAD
                                (bayesianSelected.length === 0 && !isContinuousMetric(metric));
+=======
+                               (bayesianSelected.length === 0 && !window.continuousMetrics.includes(metric));
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         checkbox.checked = shouldBeChecked;
         
         const label = document.createElement('label');
@@ -1246,6 +1482,7 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
         if (metricId !== null) {
             const v2Metric = {
                 valA: item.control,
+<<<<<<< HEAD
                 valB: item.variantB || item.variant // Maintain backward compatibility
             };
             
@@ -1270,10 +1507,23 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
                 }
                 if (item.variantDVisits && item.variantDVisits !== globalVisits.variantD) {
                     v2Metric.dVisits = item.variantDVisits;
+=======
+                valB: item.variant
+            };
+            
+            // Only include visits if they differ from global visits
+            if (globalVisits) {
+                if (item.controlVisits && item.controlVisits !== globalVisits.control) {
+                    v2Metric.cVisits = item.controlVisits;
+                }
+                if (item.variantVisits && item.variantVisits !== globalVisits.variant) {
+                    v2Metric.vVisits = item.variantVisits;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 }
             } else {
                 // No global visits, include all visit data
                 if (item.controlVisits) {
+<<<<<<< HEAD
                     v2Metric.aVisits = item.controlVisits;
                 }
                 if (item.variantBVisits) {
@@ -1284,6 +1534,12 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
                 }
                 if (item.variantDVisits) {
                     v2Metric.dVisits = item.variantDVisits;
+=======
+                    v2Metric.cVisits = item.controlVisits;
+                }
+                if (item.variantVisits) {
+                    v2Metric.vVisits = item.variantVisits;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 }
             }
             
@@ -1318,6 +1574,7 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
         sampleSizeMetricId = JSONConverter.getMetricId(config.sampleSizeMetric, storageData.metrics);
     }
     
+<<<<<<< HEAD
     // Calculate sample ratio mismatch for multi-variant experiments
     let hasSampleRatioMismatch = false;
     let srmVariants = [];
@@ -1381,6 +1638,8 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
         }
     }
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const v2Config = {
         // Keep all existing metadata
         name: config.name || '',
@@ -1397,10 +1656,14 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
         globalVisits,
         csvDateInfo,
         analytics: Utils.calculateExperimentAnalytics(config, globalVisits, data),
+<<<<<<< HEAD
         metrics, // This completely replaces the old metrics
         hasSampleRatioMismatch: hasSampleRatioMismatch,
         srmVariants: srmVariants,
         srmAnalysisResults: srmAnalysisResults
+=======
+        metrics // This completely replaces the old metrics
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         
         // Note: businessImpact, isPrimaryValidated, lastCalculated will be recalculated 
         // when the results are displayed, so we don't need to preserve old values
@@ -1413,10 +1676,13 @@ function saveConfigurationWithMetrics(atpNumber, config, data, globalVisits, csv
     
     storageData.experiments[atpNumber] = v2Config;
     JSONConverter.saveV2Data('atpConfigurations', storageData);
+<<<<<<< HEAD
     
     // Calculate and store business impact using the stored configuration
     const analytics = v2Config.analytics || {};
     calculateAndStoreBusinessImpact(data, v2Config, analytics, globalVisits, atpNumber);
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 }
 
 
@@ -1424,11 +1690,15 @@ function getDefaultStartDate(existingConfig, csvDateInfo) {
     if (existingConfig?.startDate) return existingConfig.startDate;
     if (csvDateInfo?.startDate) {
         const date = csvDateInfo.startDate;
+<<<<<<< HEAD
         // Use local date formatting to avoid timezone conversion issues
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+=======
+        return date.toISOString().split('T')[0];
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     }
     return '';
 }
@@ -1750,7 +2020,11 @@ function processAndDisplayResults() {
     displayResults(data, currentExperiment.config, currentExperiment.globalVisits);
 }
 
+<<<<<<< HEAD
 // Apply Bayesian calculations with multi-variant support
+=======
+// Apply Bayesian calculations
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 function applyBayesianCalculations(data, bayesianMetrics) {
     const debugMode = isDeveloperModeActive();
     
@@ -1763,6 +2037,7 @@ function applyBayesianCalculations(data, bayesianMetrics) {
     
     return data.map(row => {
         // Calculate Bayesian for selected metrics
+<<<<<<< HEAD
         if (bayesianMetricNames.includes(row.label) && row.controlVisits) {
             const bayesianProbabilities = {};
             
@@ -1795,10 +2070,21 @@ function applyBayesianCalculations(data, bayesianMetrics) {
                 bayesianProbabilities: bayesianProbabilities,
                 // Keep backward compatibility
                 bayesianProbability: bayesianProbabilities.variantB || 0
+=======
+        if (bayesianMetricNames.includes(row.label) && row.controlVisits && row.variantVisits) {
+            const probability = Bayesian.calculateBayesianProb(
+                row.controlVisits, row.control, row.variantVisits, row.variant
+            );
+            return {
+                ...row,
+                hasBayesianData: true,
+                bayesianProbability: probability
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             };
         }
         
         // In debug mode, calculate Bayesian for predefined metrics that have visit data
+<<<<<<< HEAD
         if (debugMode && !isContinuousMetric(row.label) && row.controlVisits) {
             const bayesianProbabilities = {};
             
@@ -1831,6 +2117,16 @@ function applyBayesianCalculations(data, bayesianMetrics) {
                 bayesianProbabilities: bayesianProbabilities,
                 // Keep backward compatibility
                 bayesianProbability: bayesianProbabilities.variantB || 0
+=======
+        if (debugMode && !window.continuousMetrics.includes(row.label) && row.controlVisits && row.variantVisits) {
+            const probability = Bayesian.calculateBayesianProb(
+                row.controlVisits, row.control, row.variantVisits, row.variant
+            );
+            return {
+                ...row,
+                hasBayesianData: true,
+                bayesianProbability: probability
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             };
         }
         
@@ -1838,6 +2134,7 @@ function applyBayesianCalculations(data, bayesianMetrics) {
     });
 }
 
+<<<<<<< HEAD
 // Calculate and store business impact for all variants in localStorage
 function calculateAndStoreBusinessImpact(data, config, analytics, globalVisits, atpNumber = null) {
     console.log('calculateAndStoreBusinessImpact called with:', {
@@ -1909,6 +2206,22 @@ function calculateAndStoreBusinessImpact(data, config, analytics, globalVisits, 
     }
     
     return maxBusinessImpact; // Return the highest impact for backward compatibility
+=======
+// Calculate and store business impact in localStorage
+function calculateAndStoreBusinessImpact(data, config, analytics, globalVisits) {
+    const projection = Utils.calculateRevenueProjection(data, config, analytics, globalVisits);
+    const businessImpact = projection && projection.annualRevenue ? projection.annualRevenue : 0;
+    
+    // Store in the configuration
+    const storageData = JSONConverter.loadAndConvertData('atpConfigurations');
+    if (storageData && storageData.experiments && storageData.experiments[currentExperiment.atp]) {
+        storageData.experiments[currentExperiment.atp].businessImpact = businessImpact;
+        storageData.experiments[currentExperiment.atp].lastCalculated = Date.now();
+        JSONConverter.saveV2Data('atpConfigurations', storageData);
+    }
+    
+    return businessImpact;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 }
 
 // Calculate and store primary KPI validation status in localStorage
@@ -1936,6 +2249,7 @@ function calculateAndStorePrimaryValidation(data, config) {
 function displayResults(data, config, globalVisits) {
     // Use stored analytics - never recalculate
     const analytics = config.analytics || {};
+<<<<<<< HEAD
 
     console.log("Displaying results for atp " + currentExperiment.atp);
     
@@ -2006,6 +2320,16 @@ function displayResults(data, config, globalVisits) {
         document.getElementById('experimentInfo').parentNode.insertBefore(srmWarningElement, document.getElementById('experimentInfo'));
     }
     
+=======
+    
+    // Calculate and store business impact and primary KPI validation
+    const businessImpact = calculateAndStoreBusinessImpact(data, config, analytics, globalVisits);
+    const isPrimaryValidated = calculateAndStorePrimaryValidation(data, config);
+    
+    // Generate experiment info
+    document.getElementById('experimentInfo').innerHTML = generateExperimentInfo(analytics, config, globalVisits, data);
+    
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     // Generate results table
     document.getElementById('resultsTable').innerHTML = generateResultsTable(data, config);
     
@@ -2013,7 +2337,10 @@ function displayResults(data, config, globalVisits) {
     document.getElementById('actionsBar').innerHTML = generateActionsBar(data, config);
     
     // Generate extra metrics
+<<<<<<< HEAD
 
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     document.getElementById('extraMetrics').innerHTML = generateExtraMetrics(data, config);
     
     // Add data upload timestamp
@@ -2029,8 +2356,11 @@ function displayResults(data, config, globalVisits) {
 
 // Generate experiment info
 function generateExperimentInfo(analytics, config, globalVisits, data) {
+<<<<<<< HEAD
     console.log("Generating experiment info for atp " + currentExperiment.atp);
     
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     let html = `
         <div class="experiment-info">
             <div class="experiment-meta">
@@ -2039,6 +2369,7 @@ function generateExperimentInfo(analytics, config, globalVisits, data) {
             </div>
     `;
     
+<<<<<<< HEAD
     // Revenue projection - always generate but hidden by default, now with multi-variant support
     const hasMultipleVariants = globalVisits && (globalVisits.variantC !== undefined || globalVisits.variantD !== undefined);
     
@@ -2176,6 +2507,27 @@ function generateExperimentInfo(analytics, config, globalVisits, data) {
             <div class="experiment-stats two-column">
                 ${leftColumn}
                 ${rightColumn}
+=======
+    // Revenue projection - always generate but hidden by default
+    const projection = Utils.calculateRevenueProjection(data, config, analytics);
+    if (projection) {
+        html += `
+            <div class="revenue-projection revenue-hidden" id="revenue-section">
+                <h4>Revenue Projection</h4>
+                <p>Annual Revenue Impact: €${projection.annualRevenue.toLocaleString()}</p>
+                <p>Based on ${projection.mainMetricChange}% change in ${config.primary}</p>
+            </div>
+        `;
+    }
+    
+    // Experiment stats
+    if (analytics.daysRunning !== null && analytics.daysRunning !== undefined) {
+        html += `
+            <div class="experiment-stats">
+                <div><strong>Days Running:</strong> ${analytics.daysRunning}</div>
+                ${analytics.dailyTrafficRate ? `<div><strong>Daily Traffic Rate:</strong> ${analytics.dailyTrafficRate.toLocaleString()} visits</div>` : ''}
+                ${analytics.projectedEndDate ? `<div><strong>Projected End Date:</strong> ${typeof analytics.projectedEndDate === 'string' ? Utils.formatDate(new Date(analytics.projectedEndDate)) : Utils.formatDate(analytics.projectedEndDate)}</div>` : ''}
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             </div>
         `;
     }
@@ -2190,23 +2542,31 @@ function generateExperimentInfo(analytics, config, globalVisits, data) {
             const sampleSizeMetricName = JSONConverter.getMetricName(config.sampleSizeMetric, storageData.metrics);
             const metricData = data.find(item => item.label === sampleSizeMetricName);
             if (metricData) {
+<<<<<<< HEAD
                 // Use multi-variant structure: find minimum across all variants
                 const variants = [metricData.control];
                 if (metricData.variantB !== null && metricData.variantB !== undefined) variants.push(metricData.variantB);
                 if (metricData.variantC !== null && metricData.variantC !== undefined) variants.push(metricData.variantC);
                 if (metricData.variantD !== null && metricData.variantD !== undefined) variants.push(metricData.variantD);
                 currentSampleSize = Math.min(...variants);
+=======
+                currentSampleSize = Math.min(metricData.control, metricData.variant);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 progressText = `${(currentSampleSize / config.sampleSize * 100).toFixed(0)}% of ${sampleSizeMetricName} collected`;
             } else {
                 progressText = `Metric '${sampleSizeMetricName}' not found in data.`;
             }
         } else if (globalVisits) {
+<<<<<<< HEAD
             // Use multi-variant structure: find minimum across all variants
             const variants = [globalVisits.control];
             if (globalVisits.variantB !== null && globalVisits.variantB !== undefined) variants.push(globalVisits.variantB);
             if (globalVisits.variantC !== null && globalVisits.variantC !== undefined) variants.push(globalVisits.variantC);
             if (globalVisits.variantD !== null && globalVisits.variantD !== undefined) variants.push(globalVisits.variantD);
             currentSampleSize = Math.min(...variants);
+=======
+            currentSampleSize = Math.min(globalVisits.control, globalVisits.variant);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             progressText = `${(currentSampleSize / config.sampleSize * 100).toFixed(0)}% of sample size collected`;
         }
 
@@ -2262,11 +2622,16 @@ function generateResultsTable(data, config) {
     return html;
 }
 
+<<<<<<< HEAD
 // Create table section with multi-variant support
+=======
+// Create table section
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 function createTableSection(title, data, isPrimary) {
     const debugMode = isDeveloperModeActive();
     const isOtherMetrics = title === 'Other Metrics';
     
+<<<<<<< HEAD
     // Determine how many variants we have by checking the first data row
     let hasVariantC = false, hasVariantD = false;
     if (data.length > 0) {
@@ -2281,6 +2646,9 @@ function createTableSection(title, data, isPrimary) {
                        (hasVariantD ? 3 : 0); // Variant C + % Change + Prob
     
     let headerHtml = `<tr><th colspan="${columnCount}" class="section">${title}`;
+=======
+    let headerHtml = `<tr><th colspan="5" class="section">${title}`;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     
     // Add "go fish 🐟" link for Other Metrics in debug mode
     if (debugMode && isOtherMetrics) {
@@ -2289,6 +2657,7 @@ function createTableSection(title, data, isPrimary) {
     
     headerHtml += `</th></tr>`;
     
+<<<<<<< HEAD
     // Create tooltip for probability thresholds
     const probTooltipText = isPrimary ? 
         'Primary Metric Thresholds:\n0–5%: Red (Unfavourable)\n5–15%: Yellow (Inconclusive)\n85–95%: Yellow (Inconclusive)\n95–100%: Green (Conclusive)' :
@@ -2402,10 +2771,41 @@ function createTableSection(title, data, isPrimary) {
         const changeText = bestChange !== null ? (bestChange === Infinity ? '∞' : bestChange.toFixed(2) + '%') : '–';
         
         // Bayesian probability - for now, show Variant B's probability (we'll update this later)
+=======
+    let html = headerHtml + `
+        <tr>
+            <th>Metric</th>
+            <th>Control</th>
+            <th>Variant</th>
+            <th>% Change</th>
+            <th>Prob. v1>control</th>
+        </tr>
+    `;
+    
+    data.forEach(row => {
+        let change = null;
+        if (!window.continuousMetrics.includes(row.label) && row.controlVisits > 0 && row.variantVisits > 0) {
+            const controlRate = row.control / row.controlVisits;
+            const variantRate = row.variant / row.variantVisits;
+            if (controlRate > 0) {
+                change = ((variantRate - controlRate) / controlRate) * 100;
+            } else if (variantRate > 0) {
+                change = Infinity;
+            } else {
+                change = 0;
+            }
+        } else {
+            change = Utils.calculatePercentageChange(row.control, row.variant);
+        }
+
+        const changeText = change !== null ? (change === Infinity ? '∞' : change.toFixed(2) + '%') : '–';
+        
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         let bayesianText = '–';
         let bayesianStyle = '';
         let isDirectional = false;
         
+<<<<<<< HEAD
         // Check if ANY variant would be considered directional for "go fish" functionality
         // This includes both Bayesian-based directional and potentially high percentage changes
         if (row.hasBayesianData && row.bayesianProbabilities) {
@@ -2445,6 +2845,9 @@ function createTableSection(title, data, isPrimary) {
             }
         } else if (row.hasBayesianData && row.bayesianProbability !== null) {
             // Backward compatibility for single variant
+=======
+        if (row.hasBayesianData && row.bayesianProbability !== null) {
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             bayesianText = (row.bayesianProbability * 100).toFixed(1) + '%';
             const bgColor = Bayesian.getBayesianCellColor(row.bayesianProbability, isPrimary);
             if (bgColor) {
@@ -2453,6 +2856,7 @@ function createTableSection(title, data, isPrimary) {
             }
         }
         
+<<<<<<< HEAD
         // Also consider a metric directional if any variant has a significant change (>10% or <-10%)
         // This helps with "go fish" when Bayesian data isn't available
         if (!isDirectional) {
@@ -2563,11 +2967,33 @@ function createTableSection(title, data, isPrimary) {
         `;
         
         html += rowHtml;
+=======
+        const controlTooltip = Utils.createTooltip(
+            Utils.formatNumber(row.control),
+            row.controlVisits ? `${row.controlVisits.toLocaleString()} visits` : 'Visit count not available'
+        );
+        
+        const variantTooltip = Utils.createTooltip(
+            Utils.formatNumber(row.variant),
+            row.variantVisits ? `${row.variantVisits.toLocaleString()} visits` : 'Visit count not available'
+        );
+        
+        html += `
+            <tr class="metric-row" data-directional="${isDirectional}">
+                <td>${row.label}</td>
+                <td>${controlTooltip}</td>
+                <td>${variantTooltip}</td>
+                <td>${changeText}</td>
+                <td ${bayesianStyle}>${bayesianText}</td>
+            </tr>
+        `;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     });
     
     return html;
 }
 
+<<<<<<< HEAD
 // Get most commonly selected metrics from saved configurations
 function getMostCommonlySelectedMetrics() {
     const data = JSONConverter.loadAndConvertData('atpConfigurations');
@@ -2774,6 +3200,8 @@ function shareLink() {
     });
 }
 
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 // Generate actions bar
 function generateActionsBar(data, config) {
     // Convert v2 IDs to names for filtering
@@ -2791,8 +3219,12 @@ function generateActionsBar(data, config) {
                 ${everythingElse.length > 0 ? `<button id="toggleExtra" class="btn">Show Everything Else (${everythingElse.length} metrics)</button>` : ''}
             </div>
             <div class="right">
+<<<<<<< HEAD
                 <button id="shareLinkBtn" class="btn">🔗 Share Link</button>
                 <button id="shareImageBtn" class="btn">📷 Share Image</button>
+=======
+                <button id="shareBtn" class="btn">Share Results</button>
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                 <button id="settingsBtn" class="btn">⚙️ Settings</button>
             </div>
         </div>
@@ -2801,6 +3233,7 @@ function generateActionsBar(data, config) {
 
 // Generate extra metrics
 function generateExtraMetrics(data, config) {
+<<<<<<< HEAD
 
     let html = `
     <div class="extra-metrics-control">
@@ -2810,6 +3243,8 @@ function generateExtraMetrics(data, config) {
         </label>
     </div>`;
 
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const everythingElse = data.filter(item => 
         item.label !== config.primary && !config.secondary.includes(item.label)
     );
@@ -2824,7 +3259,11 @@ function generateExtraMetrics(data, config) {
         sections[section].push(item);
     });
     
+<<<<<<< HEAD
     html += '<table>';
+=======
+    let html = '<table>';
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     Object.entries(sections).forEach(([sectionName, sectionData]) => {
         html += createTableSection(sectionName, sectionData, false);
     });
@@ -2850,6 +3289,7 @@ function setupResultsEventListeners(data, config) {
         });
     }
     
+<<<<<<< HEAD
     // Share link
     const shareLinkBtn = document.getElementById('shareLinkBtn');
     if (shareLinkBtn) {
@@ -2860,15 +3300,28 @@ function setupResultsEventListeners(data, config) {
     const shareImageBtn = document.getElementById('shareImageBtn');
     if (shareImageBtn) {
         shareImageBtn.addEventListener('click', () => shareResults());
+=======
+    // Share results
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', () => shareResults());
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     }
     
     // Settings
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) {
         settingsBtn.addEventListener('click', () => {
+<<<<<<< HEAD
             // Use only the metrics from the current experiment's data, not all stored metrics
             const currentExperimentMetrics = data.map(item => item.label);
             showConfigurationScreen(currentExperiment.atp, currentExperimentMetrics, null);
+=======
+            // Ensure we have the full metrics list from the stored configuration
+            const data = JSONConverter.loadAndConvertData('atpConfigurations');
+            const fullMetrics = data && data.metrics ? Object.values(data.metrics) : currentExperiment.metrics;
+            showConfigurationScreen(currentExperiment.atp, fullMetrics, null);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         });
     }
     
@@ -2920,6 +3373,7 @@ function shareResults() {
     // Create clean version for sharing
     const cleanResults = resultsElement.cloneNode(true);
     cleanResults.querySelectorAll('.actions-bar').forEach(bar => bar.remove());
+<<<<<<< HEAD
     
     // Check if extra metrics should be included in the shareable image
     const includeExtraMetrics = document.getElementById('includeExtraMetricsInShare').checked;
@@ -2931,27 +3385,49 @@ function shareResults() {
     // Create temporary container
     const tempContainer = document.createElement('div');
    
+=======
+    cleanResults.querySelectorAll('.extra-metrics.hidden').forEach(elem => elem.remove());
+    
+    // Create temporary container
+    const tempContainer = document.createElement('div');
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     tempContainer.style.cssText = `
         position: absolute;
         top: -9999px;
         left: -9999px;
+<<<<<<< HEAD
         background: #EEE;
         padding: 20px;
         width: 820px;
         font-family: Arial, sans-serif;
     `;
     
+=======
+        background: white;
+        padding: 20px;
+        width: 800px;
+        font-family: Arial, sans-serif;
+    `;
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     tempContainer.appendChild(cleanResults);
     document.body.appendChild(tempContainer);
     
     // Generate image
     html2canvas(tempContainer, {
+<<<<<<< HEAD
         backgroundColor: '#EEE',
+=======
+        backgroundColor: '#ffffff',
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         scale: 2,
         useCORS: true,
         allowTaint: true,
         width: 840,
+<<<<<<< HEAD
         height: tempContainer.scrollHeight
+=======
+        height: tempContainer.scrollHeight + 40
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     }).then(canvas => {
         document.body.removeChild(tempContainer);
         
@@ -2975,7 +3451,11 @@ function shareResults() {
         });
     }).catch(error => {
         console.error('Error generating image:', error);
+<<<<<<< HEAD
         //document.body.removeChild(tempContainer);
+=======
+        document.body.removeChild(tempContainer);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         overlay.innerHTML = `
             <div class="share-dialog">
                 <h3>❌ Error</h3>
@@ -3015,7 +3495,10 @@ function showDownloadDialog(overlay, canvas) {
 
 // Load saved experiment data and display it
 function loadSavedExperiment(atp) {
+<<<<<<< HEAD
     console.log("Function loadSavedExperiments is firing now");
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     const data = JSONConverter.loadAndConvertData('atpConfigurations');
     const config = data?.experiments?.[atp];
     
@@ -3038,6 +3521,7 @@ function loadSavedExperiment(atp) {
         return;
     }
     
+<<<<<<< HEAD
     // Convert stored v2 metrics back to data array format with multi-variant support
     const dataArray = Object.entries(config.metrics).map(([metricId, metricData]) => {
         const metricName = JSONConverter.getMetricName(parseInt(metricId), data.metrics);
@@ -3063,10 +3547,16 @@ function loadSavedExperiment(atp) {
                             (config.globalVisits ? config.globalVisits.variantD : null);
         }
         
+=======
+    // Convert stored v2 metrics back to data array format
+    const dataArray = Object.entries(config.metrics).map(([metricId, metricData]) => {
+        const metricName = JSONConverter.getMetricName(parseInt(metricId), data.metrics);
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         return {
             label: metricName,
             section: null, // We don't store section info in the old format
             control: metricData.valA,
+<<<<<<< HEAD
             variant: metricData.valB, // Keep for backward compatibility
             variantB: metricData.valB,
             variantC: metricData.valC,
@@ -3076,6 +3566,11 @@ function loadSavedExperiment(atp) {
             variantBVisits: variantBVisits,
             variantCVisits: variantCVisits,
             variantDVisits: variantDVisits,
+=======
+            variant: metricData.valB,
+            controlVisits: metricData.cVisits !== undefined ? metricData.cVisits : (config.globalVisits ? config.globalVisits.control : null),
+            variantVisits: metricData.vVisits !== undefined ? metricData.vVisits : (config.globalVisits ? config.globalVisits.variant : null),
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             hasBayesianData: metricData.hasBayesianData || false,
             bayesianProbability: metricData.bayesianProbability || null
         };
@@ -3097,10 +3592,14 @@ function loadSavedExperiment(atp) {
         analytics: config.analytics,
         businessImpact: config.businessImpact,
         isPrimaryValidated: config.isPrimaryValidated,
+<<<<<<< HEAD
         lastCalculated: config.lastCalculated,
         hasSampleRatioMismatch: config.hasSampleRatioMismatch || false,
         srmVariants: config.srmVariants || [],
         srmAnalysisResults: config.srmAnalysisResults || []
+=======
+        lastCalculated: config.lastCalculated
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     };
     
     // Set current experiment
@@ -3130,6 +3629,7 @@ function loadSavedExperiments() {
     
     let html = '';
     const sortBy = document.getElementById('sortExperiments').value;
+<<<<<<< HEAD
     const statusFilter = document.getElementById('statusFilter').value;
     const searchTerm = document.getElementById('experimentSearch').value.toLowerCase();
     const debugMode = isDeveloperModeActive();
@@ -3155,6 +3655,12 @@ function loadSavedExperiments() {
     
     // Sort experiments based on selected option
     const sortedExperiments = filteredExperiments.sort(([atpA, a], [atpB, b]) => {
+=======
+    const debugMode = isDeveloperModeActive();
+    
+    // Sort experiments based on selected option
+    const sortedExperiments = Object.entries(configs).sort(([,a], [,b]) => {
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         switch(sortBy) {
             case 'recently-updated':
                 const timestampA = a.timestamp || 0;
@@ -3162,6 +3668,7 @@ function loadSavedExperiments() {
                 return timestampB - timestampA; // Descending order (newest first)
             
             case 'ending-soon':
+<<<<<<< HEAD
                 // Only sort by end date if experiments are still active (not completed/stale)
                 const statusA = getExperimentStatus(a, atpA, data);
                 const statusB = getExperimentStatus(b, atpB, data);
@@ -3182,6 +3689,14 @@ function loadSavedExperiments() {
                 
                 // For non-active experiments, sort by last updated (newest first)
                 return (b.timestamp || 0) - (a.timestamp || 0);
+=======
+                const endDateA = getProjectedEndDate(a);
+                const endDateB = getProjectedEndDate(b);
+                if (endDateA === null && endDateB === null) return 0;
+                if (endDateA === null) return 1;
+                if (endDateB === null) return -1;
+                return endDateA - endDateB; // Ascending order (ending soonest first)
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             
             case 'business-impact':
                 if (!debugMode) return 0; // Only show in debug mode
@@ -3201,6 +3716,7 @@ function loadSavedExperiments() {
         const isValidated = checkIfExperimentValidated(config);
         const isSampleSizeReached = checkIfSampleSizeReached(atp, config, data);
         const primaryMetricName = config.primary ? JSONConverter.getMetricName(config.primary, data.metrics) || `Metric ID: ${config.primary}` : 'Not set';
+<<<<<<< HEAD
         const status = getExperimentStatus(config, atp, data);
         const statusIcon = getStatusIcon(status);
         const statusName = getStatusDisplayName(status);
@@ -3302,6 +3818,25 @@ function loadSavedExperiments() {
                     
                 </div>
                 <p class="last-updated">Last updated ${lastUpdated}</p>
+=======
+
+        html += `
+            <div class="experiment-item ${isActive ? 'active' : ''} ${needsConfig ? 'needs-config' : ''}" data-atp="${atp}">
+                <h4>${config.name || 'ATP ' + atp}</h4>
+                <p class="last-updated">Last updated ${lastUpdated}</p>
+                ${needsConfig ? '<p style="color: #856404;">⚠️ Needs Configuration</p>' : ''}
+                <p>Primary: ${primaryMetricName}</p>
+                ${config.startDate ? `<p>Started: ${Utils.formatDate(config.startDate)}</p>` : ''}
+                ${config.analytics?.projectedEndDate ? `
+                    <p>Projected End: ${Utils.formatDate(config.analytics.projectedEndDate)}</p>
+                    <p>Days left: ${Math.ceil((new Date(config.analytics.projectedEndDate) - new Date()) / (1000 * 60 * 60 * 24))}</p>
+                ` : ''}
+                ${debugMode ? `<p style="color: red; font-size: 11px;">Business Impact: €${(config.businessImpact || 0).toLocaleString()}</p>` : ''}
+                <div class="icon-container">
+                    ${isSampleSizeReached ? '<span class="samplesize-tick" title="Sample size reached">✅</span>' : ''}
+                    ${isValidated ? '<span class="validation-tick" title="Primary metric is validated">🚀</span>' : ''}
+                </div>
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             </div>
         `;
     });
@@ -3340,6 +3875,7 @@ function getBusinessImpact(config) {
     return config.businessImpact || 0;
 }
 
+<<<<<<< HEAD
 // New status calculation functions
 function getExperimentStatus(config, atp, data) {
     const now = new Date();
@@ -3386,19 +3922,25 @@ function getStatusIcon(status) {
     }
 }
 
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 function checkIfExperimentValidated(config) {
     // Only use stored validation status - no fallback calculations
     return config.isPrimaryValidated || false;
 }
 
 function checkIfSampleSizeReached(atp, config, data) {
+<<<<<<< HEAD
     console.log("AGAIN Checking sample size is reached for atp" + atp);
     console.log(config.sampleSizeMetric);
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     if (!config || !config.sampleSize) {
         return false;
     }
 
     let currentSampleSize = 0;
+<<<<<<< HEAD
     
     // Handle metric-based sample size
     if (config.sampleSizeMetric) {
@@ -3445,6 +3987,21 @@ function checkIfSampleSizeReached(atp, config, data) {
     console.log(atp + " Current sample size is " + currentSampleSize);
     console.log(atp + " Sample size is " + config.sampleSize);
     console.log(atp + " Sample size is reached: " + (currentSampleSize >= config.sampleSize));
+=======
+    if (config.sampleSizeMetric && data && data.metrics && data.experiments) {
+        const experimentData = data.experiments[atp];
+        if(experimentData) {
+            const metricName = JSONConverter.getMetricName(config.sampleSizeMetric, data.metrics);
+            const metricId = Object.keys(data.metrics).find(key => data.metrics[key] === metricName);
+            if (metricId && experimentData.metrics[metricId]) {
+                const metric = experimentData.metrics[metricId];
+                currentSampleSize = Math.min(metric.valA, metric.valB);
+            }
+        }
+    } else if (config.globalVisits) {
+        currentSampleSize = Math.min(config.globalVisits.control, config.globalVisits.variant);
+    }
+>>>>>>> a4edd76 (Added agents.md with some good practices)
 
     return currentSampleSize >= config.sampleSize;
 }
@@ -3457,6 +4014,7 @@ function convertMetricsToData(metrics) {
         hasBayesianData: data.hasBayesianData || false,
         bayesianProbability: data.bayesianProbability || null
     }));
+<<<<<<< HEAD
 }
 
 // Bulk cleanup functionality
@@ -3618,3 +4176,6 @@ function performCleanup(experimentsToDelete) {
     // Show success message
     alert(`Successfully deleted ${experimentsToDelete.length} old experiments.`);
 }
+=======
+} 
+>>>>>>> a4edd76 (Added agents.md with some good practices)

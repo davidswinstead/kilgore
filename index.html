@@ -14,6 +14,7 @@
             <p>Drop CSV files here or click to browse</p>
             <input type="file" id="fileInput" accept=".csv" multiple style="display: none">
         </div>
+<<<<<<< HEAD
         <div class="filter-controls">
             <div class="filter-row">
                 <select id="statusFilter" title="Show experiments by status">
@@ -29,6 +30,15 @@
                 </select>
             </div>
             <input type="text" id="experimentSearch" placeholder="Search..." title="Search experiments">
+=======
+        <div class="sort-control">
+            <label for="sortExperiments">Sort by:</label>
+            <select id="sortExperiments">
+                <option value="recently-updated">Recently updated</option>
+                <option value="ending-soon">Ending soon</option>
+                <option value="business-impact" id="business-impact-option" style="display: none;">Business impact (high to low)</option>
+            </select>
+>>>>>>> a4edd76 (Added agents.md with some good practices)
         </div>
         <div id="experimentsList">
             <p>No saved experiments</p>
@@ -37,7 +47,11 @@
     
     <div>
         <div class="container">
+<<<<<<< HEAD
 			<h1 style="cursor: pointer;" onclick="window.location.reload()">Kilgore's Tasty Sandwich</h1>
+=======
+			<h1 style="cursor: pointer;" onclick="window.location.reload()">Kilgore's Sandwich</h1>
+>>>>>>> a4edd76 (Added agents.md with some good practices)
             <!-- Main Content -->
             <div class="content">
                 
@@ -52,9 +66,15 @@
                         <p>Go Fish mode now enabled, when you view full metric list you can filter to only validated/directional metrics (potentially encourages p-hacking)</p>
                         <p>Use these with caution! They are hidden by default for a reason!</p>
                     </div>
+<<<<<<< HEAD
                         <h2>Open adobe workspace-&gt; Project menu -&gt; Export CSV -&gt; Add here</h2>
                         <p>Kilgore's Sandwich is an Adobe CSV output analyser and logger. You grab your CSV output from Adobe, add it, and the tool will help you analyse it. Can add multiple files at once.</p>
                         <h2>Features:</h2> 
+=======
+                        <h2>Open adobe workspace-&gt; Project menu -&gt; Export CSV -&gt; Upload here</h2>
+                        <p>Kilgore's Sandwich is an Adobe CSV output analyser and logger. You grab your CSV output from Adobe, upload it, and the tool will help you analyse it. Can upload multiple files at once.</p>
+                        <p><strong>Features:</strong></p> 
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                         <ul>
                             <li>Shows you all metrics found in the file</li>
                             <li>Allows you to select primary and secondary metrics for quick-view </li>
@@ -64,6 +84,7 @@
                             <li>Calculates estimated remaining runtime (if you entered the sample size) with a progress meter</li>
                             <li>Share button provides a nice summary image in your clipboard, you can paste it into Teams/JIRA</li>
                             <li>Saves the data for you to quickly come back and check later (approx 10x faster than going back to Adobe))</li>
+<<<<<<< HEAD
                             <li><span class="badge-new">NEW</span> Automatic SRM detection/warning</li>
                         </ul>
                         <p>The first time you add a CSV from an ATP-XXX number the tool doesn't recognise, you need to select your primary/secondary KPIs. After this it will be saved in localStorage for next time.</p>
@@ -157,6 +178,12 @@
                             
                             
                             <div class="import-config-section">
+=======
+                        </ul>
+                        <p>The first time you upload a CSV from an ATP-XXX number the tool doesn't recognise, you need to select your primary/secondary KPIs. After this it will be saved in localStorage for next time.</p>
+                        <p><strong>The conclusions you draw are only as good as the data you are looking at. For best results upload fresh data every day. </strong>Tip: You can ask Adobe to automatically email you a fresh set of CSV's every morning for each experiment you're running. </p>
+                        <div class="import-config-section">
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                             <button id="toggleImport" class="btn">Edit Raw Config</button>
                             <button id="toggleDevOptions" class="btn" style="background-color: #6c757d; color: white;">Toggle developer options</button>
                             <button id="shareExpData" class="btn" style="background-color: #28a745; color: white;">Share exp data</button>
@@ -192,6 +219,57 @@
                                 </div>
                             </div>
         
+<<<<<<< HEAD
+=======
+        
+        
+                            <h2>Disclaimer</h2>
+                            <p>This is NOT a live data tool. This does NOT read from any live source. This does NOT connect to anything at all, not Adobe, not monetate, not AXE, nothing. It literally just takes the CSV you upload and parse it for convenience. </p>
+                            <p>The processing is done entirely on your local machine (JavaScript), no data is sent to any server for processing. All config and data storage is in your browser's localStorage functionality, entirely on your machine, nothing at all stored on my server at any point. Seriously I don't even have Google Analytics on this thing.</p>
+                            <h2>Coming soon</h2>
+                            <p>Features in an upcoming version<br>
+                                
+                            <span style="font-size: 0.8em; color: #666;">(sorted loosely into priority order)</span>
+                            </p>
+                            
+                            
+                            <p><strong>Bug fixes</strong></p>
+                            <ul>
+                                <li><i>No known bugs at this time...</i></li>
+                            </ul>   
+                            <p><strong>UI improvements</strong></p>
+                            <ul>
+                                <li>Moving to a fixed side column design for screen real estate (<a href="../testing/">WIP</a>)</li>
+                                <li>UI of the left col needs to collapse down, as the older version was</li>
+                                <li>Card should show the sorted-by info</li>
+
+                                <li>Link to JIRA tickets</li>
+                            </ul>
+                            <p><strong>New Features</strong></p>
+                            <ul>
+                                <li>When selecting primary metric - we can propose to default secondary to the previously selected ones</li>
+                                <li>Soon enough the list will become long and most of them ended. We need an archive function, otherwise it will mess up the view.</li>
+                                <li>If we can archive we will also need a way to view that archive.</li>
+                                <li>Go fish feature can launch to public (currently in dev options only) if I implement bonferroni corrections</li>
+                                <li>Eventually I want to be able to save and compare previous versions but that's a stretch goal</li>
+
+                            </ul>
+                            <p><strong>Done</strong></p>
+                            <ul>
+                                <li>Ability to set sample size based on a metric other than traffic (for AOV experiments)</li>
+                                <li>Relative percentages need to be based on the rate not the absolute number, currently they differ from AXE</li>
+                                <li>Visual indicators to show sample size + validated or not, in exp card</li>
+                                <li>Invert the bayesian metrics list, instead of an inclusion we can make it an exclusion, since most metrics are binomial (will help with auto selection, and with go fish mode)</li>
+                                <li>Review of experiment card info, would be good to include # days remaining but I don't want the card to be too big so will need to drop something off</li>
+                                <li>Develop options mode times out after 3 days</li>
+                                <li>Default name to include ATP number</li>
+                                <li>Ability to import/export partial JSON configs, per experiment</li>
+                                <li>If I can figure out a way to minify the JSON we can create shareable URLs, that would enable a neat feature to "Shate Latest Config" via a link</li>
+                            </ul>
+                                <p>Likely coming in early August when my Cursor credits reset! Or I build manually sooner than that if I fancy a coding challenge one evening</p>
+        
+        
+>>>>>>> a4edd76 (Added agents.md with some good practices)
                     </div>
                 
                 <!-- Configuration Section -->
@@ -252,14 +330,21 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
         <p style="text-align: center; color: #CCC; font-size: 8px; margin: 20px; margin-left: 320px;" class="made-you-look">made you look</p>
+=======
+        <p style="text-align: center; color: #CCC; font-size: 8px; margin: 20px; margin-left: 320px;">made you look</p>
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     </div>
 
     <!-- Scripts -->
     <script src="js/bayesian.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/convertjson.js"></script>
+<<<<<<< HEAD
     <script src="js/srm.js"></script>
+=======
+>>>>>>> a4edd76 (Added agents.md with some good practices)
     <script src="js/main.js"></script>
     
 </body>

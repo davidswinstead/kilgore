@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Conversion Test</title>
+</head>
+<body>
+    <h1>JSON Conversion Test</h1>
+    <button onclick="runTest()">Run Conversion Test</button>
+    <button onclick="runStepByStepTest()">Run Step-by-Step Test</button>
+    <div id="results"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/convertjson.js"></script>
+    <script>
+        function runTest() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Running test...</p>';
+            
+            try {
+                const testResult = JSONConverter.testConversion();
+                
+                if (testResult.success) {
+                    results.innerHTML = `
+                        <h2>✅ Test Passed!</h2>
+                        <p>Conversion and reverse conversion successful.</p>
+                        <h3>V1 Format:</h3>
+                        <pre>${JSON.stringify(testResult.original, null, 2)}</pre>
+                        <h3>V2 Format:</h3>
+                        <pre>${JSON.stringify(testResult.v2, null, 2)}</pre>
+                        <h3>Converted Back:</h3>
+                        <pre>${JSON.stringify(testResult.convertedBack, null, 2)}</pre>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <h2>❌ Test Failed!</h2>
+                        <p>Conversion and reverse conversion did not match.</p>
+                    `;
+                }
+            } catch (error) {
+                results.innerHTML = `
+                    <h2>❌ Test Error!</h2>
+                    <p>Error: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+                    }
+    }
+    
+    function runStepByStepTest() {
+        const results = document.getElementById('results');
+        results.innerHTML = '<p>Running step-by-step test...</p>';
+        
+        try {
+            const testResult = JSONConverter.testConversionStepByStep();
+            
+            if (testResult.success) {
+                results.innerHTML = `
+                    <h2>✅ Step-by-Step Test Passed!</h2>
+                    <p>Conversion and reverse conversion successful.</p>
+                    <h3>V1 Format:</h3>
+                    <pre>${JSON.stringify(testResult.original, null, 2)}</pre>
+                    <h3>V2 Format:</h3>
+                    <pre>${JSON.stringify(testResult.v2, null, 2)}</pre>
+                    <h3>Converted Back:</h3>
+                    <pre>${JSON.stringify(testResult.convertedBack, null, 2)}</pre>
+                `;
+            } else {
+                results.innerHTML = `
+                    <h2>❌ Step-by-Step Test Failed!</h2>
+                    <p>Conversion and reverse conversion did not match.</p>
+                `;
+            }
+        } catch (error) {
+            results.innerHTML = `
+                <h2>❌ Step-by-Step Test Error!</h2>
+                <p>Error: ${error.message}</p>
+                <pre>${error.stack}</pre>
+            `;
+        }
+    }
+    </script>
+</body>
+</html> 

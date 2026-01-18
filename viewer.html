@@ -1,0 +1,2808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kilgore's Sandwich - Adobe A/B Test Bayesian Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            line-height: 1.4;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: #2c3e50;
+            color: white;
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            background: #34495e;
+            padding: 15px;
+            border-bottom: 1px solid #3d566e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+        
+        .sidebar-header .btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            min-width: auto;
+        }
+        
+        .sidebar-content {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .experiments-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 15px;
+            height: calc(100vh - 60px);
+        }
+        
+        .experiments-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .no-experiments {
+            padding: 20px;
+            text-align: center;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        .sidebar-drop-zone {
+            position: sticky;
+            bottom: 0;
+            background: #34495e;
+            border: 2px dashed #52c4f0;
+            border-radius: 8px 8px 0 0;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            border-bottom: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-drop-zone:hover {
+            background: #3d566e;
+            border-color: #3498db;
+        }
+        
+        .sidebar-drop-zone.dragover {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+        
+        .sidebar-drop-zone h4 {
+            margin: 0 0 5px 0;
+            color: #ecf0f1;
+            font-size: 14px;
+        }
+        
+        .sidebar-drop-zone p {
+            margin: 0;
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+        
+        .experiment-item {
+            padding: 15px;
+            border-bottom: 1px solid #3d566e;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .experiment-item:hover {
+            background: #34495e;
+        }
+        
+        .experiment-item.active {
+            background: #3498db;
+        }
+        
+        .experiment-item .name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .experiment-item .atp {
+            font-size: 12px;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+        }
+        
+        .experiment-item .date {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-bottom: 2px;
+        }
+
+        .experiment-item .time-ago {
+            font-size: 11px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .experiment-item .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e74c3c;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .experiment-item:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .experiment-item .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .experiment-item {
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-left: 370px;
+            margin-right: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .header {
+            background: #333;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #007cba;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area.dragover {
+            border-color: #005a87;
+            background-color: #f0f8ff;
+        }
+        
+        .upload-area h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .upload-area p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .upload-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .upload-button:hover {
+            background: #005a87;
+        }
+        
+        .manual-input {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        
+        .manual-input textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #007cba;
+            color: white;
+            border-color: #007cba;
+        }
+        
+        .btn-primary:hover {
+            background: #005a87;
+            border-color: #005a87;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            border-color: #1e7e34;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            border-color: #bd2130;
+        }
+        
+        #resultsContainer {
+            margin-top: 20px;
+        }
+        
+        #resultsContainer table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        #resultsContainer th, #resultsContainer td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            text-align: left;
+            font-size: 13px;
+        }
+        
+        #resultsContainer th.section {
+            background: #eee;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        #resultsContainer th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .experiment-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .experiment-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+        
+        .experiment-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .experiment-meta span {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .experiment-stats {
+            display: flex;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .experiment-stats > div {
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        .experiment-stats > div:first-child {
+            padding-left: 0;
+        }
+        
+        .experiment-stats > div:last-child {
+            padding-right: 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 40px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #c8e6c9;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .progress-fill.complete {
+            background-color: #4caf50;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+            z-index: 2;
+            white-space: nowrap;
+        }
+        
+        .progress-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .progress-marker {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .config-screen {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .config-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .config-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input[type="text"], .form-group input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input[type="date"] {
+            width: 50%;
+        }
+        
+        #sampleSize {
+            width: 50%;
+        }
+        
+        .typeahead-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .typeahead-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            min-height: 40px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: white;
+            cursor: text;
+        }
+        
+        .typeahead-input {
+            border: none;
+            outline: none;
+            flex-grow: 1;
+            min-width: 100px;
+            padding: 5px;
+        }
+        
+        .dropdown-arrow {
+            margin-left: auto;
+            color: #666;
+            pointer-events: none;
+        }
+        
+        .selected-tag {
+            background: #007cba;
+            color: white;
+            padding: 2px 6px;
+            margin: 2px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .remove-tag {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .remove-tag:hover {
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+        
+        .typeahead-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-top: none;
+            background: white;
+            z-index: 1000;
+        }
+        
+        .typeahead-option {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .typeahead-option:hover {
+            background: #f5f5f5;
+        }
+        
+        .bayesian-config {
+            margin-top: 10px;
+        }
+        
+        .bayesian-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .bayesian-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .actions-bar .left {
+            flex: 1;
+        }
+        
+        .actions-bar .right {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .extra-metrics {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+        }
+        
+        .tooltip .tooltip-icon {
+            width: 16px;
+            height: 16px;
+            background: #007cba;
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 350px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: fixed;
+            z-index: 99999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.4;
+            pointer-events: none;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .debug-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .debug-tooltip .debug-tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 99999;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .debug-tooltip:hover .debug-tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .revenue-tooltip {
+            position: absolute;
+            display: inline-block;
+            cursor: help;
+        }
+        
+        .revenue-tooltip .revenue-tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 99999;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: normal;
+        }
+        
+        h3:hover .revenue-tooltip .revenue-tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .share-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+        
+        .share-dialog {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .share-dialog img {
+            max-width: 100%;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+        
+        .share-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .processing {
+            color: #004085;
+            background: #cce5ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Saved Experiments</h3>
+            <button class="btn btn-secondary" id="refreshSidebar">↻</button>
+        </div>
+        <div class="sidebar-content" id="sidebarContent">
+            <div class="experiments-list-container">
+                <div class="experiments-list" id="experimentsList">
+                    <div class="no-experiments">No saved experiments</div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-drop-zone" id="sidebarDropZone">
+            <h4>📁 Drop CSV files here</h4>
+            <p>Upload new or update existing experiments</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Kilgore's Sandwich</h1>
+            <p>Adobe A/B Test Bayesian Calculator</p>
+        </div>
+        
+        <div class="content">
+            <div id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <h3>📁 Drop your CSV files here</h3>
+                    <p>Or click to browse for Adobe Analytics CSV/TSV export files</p>
+                    <p><small>You can upload multiple files at once. Only experiments with existing configurations will be processed automatically.</small></p>
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">Choose Files</button>
+                    <input type="file" id="fileInput" accept=".csv,.tsv,.txt" multiple />
+                </div>
+                
+                <div class="manual-input">
+                    <h4>Or paste CSV/TSV data manually:</h4>
+                    <textarea id="csvInput" placeholder="Paste Adobe Analytics CSV or TSV data here (from export or copy-paste from report)..."></textarea>
+                    <button class="btn btn-primary" id="calculateBtn">Calculate % Difference + Bayesian</button>
+                </div>
+            </div>
+            
+            <div id="configScreen" class="hidden"></div>
+            <div id="resultsContainer" class="hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentData = [];
+        let currentATP = null;
+        let currentGlobalVisits = null;
+        let currentFileName = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileUpload();
+            initializeManualInput();
+            initializeSidebar();
+            loadSavedExperiments();
+        });
+
+        // File upload functionality
+        function initializeFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // Handle drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFiles(files);
+                }
+            });
+
+            // Handle file input change
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFiles(e.target.files);
+                }
+            });
+
+            // Handle click on upload area
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        function handleFiles(files) {
+            const validFiles = [];
+            const invalidFiles = [];
+            
+            // Filter valid files
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.name.match(/\.(csv|tsv|txt)$/i)) {
+                    validFiles.push(file);
+                } else {
+                    invalidFiles.push(file.name);
+                }
+            }
+            
+            if (invalidFiles.length > 0) {
+                showError(`Invalid file types: ${invalidFiles.join(', ')}. Only CSV, TSV, and TXT files are supported.`);
+            }
+            
+            if (validFiles.length === 0) {
+                return;
+            }
+            
+            if (validFiles.length === 1) {
+                // Single file - use existing behavior
+                handleSingleFile(validFiles[0]);
+                return;
+            }
+            
+            // Multiple files - process only existing configurations
+            processMultipleFiles(validFiles);
+        }
+
+        function handleSingleFile(file) {
+            // Extract filename without extension as default experiment name
+            currentFileName = file.name.replace(/\.(csv|tsv|txt)$/i, '');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvData = e.target.result;
+                document.getElementById('csvInput').value = csvData;
+                processCSVData(csvData);
+            };
+            reader.readAsText(file);
+        }
+
+        function processMultipleFiles(files) {
+            const results = {
+                processed: [],
+                skipped: [],
+                errors: []
+            };
+            
+            let processedCount = 0;
+            const totalFiles = files.length;
+            
+            // Show processing message
+            showProcessingMessage(`Processing ${totalFiles} files...`);
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const csvData = e.target.result;
+                        const atpNumber = extractATPFromCSV(csvData);
+                        
+                        if (!atpNumber) {
+                            results.errors.push(`${file.name}: No ATP number found`);
+                        } else {
+                            const existingConfig = loadConfiguration(atpNumber);
+                            if (existingConfig) {
+                                // Process this file
+                                const parseResult = parseCSVData(csvData);
+                                if (parseResult.data.length > 0) {
+                                    const dataWithBayesian = applyBayesianCalculations(parseResult.data, existingConfig.bayesian);
+                                    const storableMetrics = extractStorableMetrics(parseResult.data, existingConfig);
+                                    
+                                    // Save updated data
+                                    saveConfiguration(atpNumber, { ...existingConfig, globalVisits: parseResult.globalVisits }, storableMetrics);
+                                    
+                                    results.processed.push({
+                                        file: file.name,
+                                        atp: atpNumber,
+                                        name: existingConfig.name,
+                                        metrics: parseResult.data.length
+                                    });
+                                } else {
+                                    results.errors.push(`${file.name}: No valid metrics found`);
+                                }
+                            } else {
+                                results.skipped.push({
+                                    file: file.name,
+                                    atp: atpNumber,
+                                    reason: 'No existing configuration found'
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        results.errors.push(`${file.name}: ${error.message}`);
+                    }
+                    
+                    processedCount++;
+                    
+                    // When all files are processed, show summary
+                    if (processedCount === totalFiles) {
+                        hideProcessingMessage();
+                        showBatchProcessingSummary(results);
+                        
+                        // Refresh sidebar to show updated experiments
+                        loadSavedExperiments();
+                        
+                        // If we processed any files, load the first one
+                        if (results.processed.length > 0) {
+                            const firstProcessed = results.processed[0];
+                            loadExperiment(firstProcessed.atp);
+                        }
+                    }
+                };
+                
+                reader.onerror = function() {
+                    results.errors.push(`${file.name}: Failed to read file`);
+                    processedCount++;
+                    
+                    if (processedCount === totalFiles) {
+                        hideProcessingMessage();
+                        showBatchProcessingSummary(results);
+                        loadSavedExperiments();
+                    }
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+
+        // Manual input functionality
+        function initializeManualInput() {
+            document.getElementById('calculateBtn').addEventListener('click', () => {
+                const csvData = document.getElementById('csvInput').value;
+                if (!csvData.trim()) {
+                    showError('Please provide CSV data either by uploading a file or pasting it manually.');
+                    return;
+                }
+                currentFileName = null; // No filename for manual input
+                processCSVData(csvData);
+            });
+        }
+
+        // Helper function to format time difference
+        function formatTimeDiff(timestamp) {
+            const diff = Date.now() - timestamp;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            if (hours < 24) {
+                return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+            }
+            const days = Math.floor(hours / 24);
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        }
+
+        // Helper function to store minimal metric data
+        function extractStorableMetrics(data, config) {
+            const metrics = {};
+
+            // Store primary metric
+            const primary = data.find(item => item.label === config.primary);
+            if (primary) {
+                metrics[config.primary] = {
+                    valA: primary.valA,
+                    valB: primary.valB,
+                    controlVisits: primary.controlVisits,
+                    variantVisits: primary.variantVisits
+                };
+            }
+
+            // Store secondary metrics
+            config.secondary.forEach(label => {
+                const metric = data.find(item => item.label === label);
+                if (metric) {
+                    metrics[label] = {
+                        valA: metric.valA,
+                        valB: metric.valB,
+                        controlVisits: metric.controlVisits,
+                        variantVisits: metric.variantVisits
+                    };
+                }
+            });
+
+            // Store revenue metric if present
+            const revenue = data.find(item => item.label === "Revenue (incl. C&C) - SPR");
+            if (revenue) {
+                metrics["Revenue (incl. C&C) - SPR"] = {
+                    valA: revenue.valA,
+                    valB: revenue.valB
+                };
+            }
+
+            return metrics;
+        }
+
+        // Bayesian calculation functions
+        function calculateBayesianProb(controlVisits, controlConversions, variantVisits, variantConversions) {
+            console.log("Bayesian calc:", controlVisits, controlConversions, variantVisits, variantConversions);
+
+            // Validate inputs
+            if (controlVisits <= 0 || variantVisits <= 0 ||
+                controlConversions < 0 || variantConversions < 0 ||
+                controlConversions > controlVisits || variantConversions > variantVisits) {
+                console.warn('Invalid Bayesian inputs:', { controlVisits, controlConversions, variantVisits, variantConversions });
+                return 0.5;
+            }
+
+            const alpha1 = 1 + controlConversions;
+            const beta1 = 1 + controlVisits - controlConversions;
+            const alpha2 = 1 + variantConversions;
+            const beta2 = 1 + variantVisits - variantConversions;
+
+            // Use normal approximation for large sample sizes
+            if (controlVisits > 30 && variantVisits > 30) {
+                const mean1 = alpha1 / (alpha1 + beta1);
+                const mean2 = alpha2 / (alpha2 + beta2);
+                const var1 = (alpha1 * beta1) / ((alpha1 + beta1) * (alpha1 + beta1) * (alpha1 + beta1 + 1));
+                const var2 = (alpha2 * beta2) / ((alpha2 + beta2) * (alpha2 + beta2) * (alpha2 + beta2 + 1));
+
+                const diffMean = mean2 - mean1;
+                const diffVar = var1 + var2;
+                const diffStd = Math.sqrt(diffVar);
+
+                if (diffStd === 0) return 0.5;
+
+                const z = diffMean / diffStd;
+                return normalCDF(z);
+            }
+
+            // For smaller samples, use simplified Monte Carlo
+            const samples = 10000;
+            let variantBetterCount = 0;
+
+            for (let i = 0; i < samples; i++) {
+                const sampleA = simpleBetaSample(alpha1, beta1);
+                const sampleB = simpleBetaSample(alpha2, beta2);
+
+                if (sampleB > sampleA) {
+                    variantBetterCount++;
+                }
+            }
+
+            return variantBetterCount / samples;
+        }
+
+        function simpleBetaSample(alpha, beta) {
+            let sum = 0;
+            for (let i = 0; i < alpha; i++) {
+                sum += -Math.log(Math.random());
+            }
+            for (let i = 0; i < beta; i++) {
+                sum += -Math.log(Math.random());
+            }
+            const x = -Math.log(Math.random());
+            return x / (x + sum);
+        }
+
+        function normalCDF(x) {
+            return 0.5 * (1 + erf(x / Math.sqrt(2)));
+        }
+
+        function erf(x) {
+            const a1 =  0.254829592;
+            const a2 = -0.284496736;
+            const a3 =  1.421413741;
+            const a4 = -1.453152027;
+            const a5 =  1.061405429;
+            const p  =  0.3275911;
+
+            const sign = x >= 0 ? 1 : -1;
+            x = Math.abs(x);
+
+            const t = 1.0 / (1.0 + p * x);
+            const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+            return sign * y;
+        }
+
+        // ATP and Configuration Management
+        function extractATPFromCSV(csvText) {
+            const atpMatch = csvText.match(/ATP-\d+/);
+            return atpMatch ? atpMatch[0] : null;
+        }
+
+        function extractStartDateFromCSV(csvText) {
+            // Look for date pattern in the header section like "# Date: Jun 24, 2025 - Jul 24, 2025"
+            const dateMatch = csvText.match(/^"?#\s*Date:\s*([^-]+)\s*-\s*([^"]+)"?/mi);
+            if (dateMatch) {
+                const startDateStr = dateMatch[1].trim();
+                const endDateStr = dateMatch[2].trim();
+
+                try {
+                    const parseDate = (dateStr) => {
+                        const parts = dateStr.replace(',', '').split(' '); // e.g., ["Jun", "24", "2025"]
+                        const months = { 'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11 };
+                        const year = parseInt(parts[2], 10);
+                        const month = months[parts[0]];
+                        const day = parseInt(parts[1], 10);
+                        return new Date(year, month, day); // Creates date at local midnight
+                    };
+
+                    const startDate = parseDate(startDateStr);
+                    const endDate = parseDate(endDateStr);
+
+                    // Validate dates
+                    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                        return {
+                            startDate: startDate,
+                            endDate: endDate,
+                            startDateStr: startDateStr,
+                            endDateStr: endDateStr
+                        };
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse dates from CSV:', e);
+                }
+            }
+            return null;
+        }
+
+        function saveConfiguration(atpNumber, config, metrics = null) {
+            const configs = JSON.parse(localStorage.getItem('atpConfigurations') || '{}');
+            if (metrics) {
+                configs[atpNumber] = {
+                    ...config,
+                    metrics: metrics,
+                    timestamp: Date.now()
+                };
+            } else {
+                configs[atpNumber] = {
+                    ...config,
+                    timestamp: Date.now()
+                };
+            }
+            localStorage.setItem('atpConfigurations', JSON.stringify(configs));
+        }
+
+        function loadConfiguration(atpNumber) {
+            const configs = JSON.parse(localStorage.getItem('atpConfigurations') || '{}');
+            return configs[atpNumber] || null;
+        }
+
+        function loadStoredData(atpNumber) {
+            const config = loadConfiguration(atpNumber);
+            if (config && config.metrics && config.timestamp) {
+                return {
+                    metrics: config.metrics,
+                    timestamp: config.timestamp,
+                    globalVisits: config.globalVisits || null
+                };
+            }
+            return null;
+        }
+
+        function getAllMetricNames(data) {
+            return [...new Set(data.map(item => item.label))].sort();
+        }
+
+        // Data Processing Functions
+        function parseCSVData(csvText) {
+            // Detect if data is tab-separated (TSV) or comma-separated (CSV)
+            const firstFewLines = csvText.split('\n').slice(0, 5).join('\n');
+            const tabCount = (firstFewLines.match(/\t/g) || []).length;
+            const commaCount = (firstFewLines.match(/,/g) || []).length;
+
+            // Use tabs if there are more tabs than commas, otherwise use commas
+            const separator = tabCount > commaCount ? '\t' : ',';
+            const rows = csvText.split('\n').map(r => r.split(separator).map(cell => cell.trim().replace(/"/g, '')));
+
+            let data = [];
+            let currentSectionVisits = null;
+            let currentSection = '';
+            let globalVisits = null;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+
+                // Detect section headers
+                if (row[0] && row[0].startsWith('#') && row[0].includes('KPI')) {
+                    currentSection = row[0].replace(/#+/g, '').trim();
+                    currentSectionVisits = null;
+                    continue;
+                }
+
+                // Handle both 3-column and 4-column CSV formats
+                let prefix, label, valA, valB;
+
+                if (row.length === 4) {
+                    prefix = row[0];
+                    label = row[1];
+                    valA = parseFloat(row[2]);
+                    valB = parseFloat(row[3]);
+
+                    if (prefix === 'Segments') {
+                        const controlVisits = parseInt(row[2]);
+                        const variantVisits = parseInt(row[3]);
+                        if (!isNaN(controlVisits) && !isNaN(variantVisits)) {
+                            currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                            if (!globalVisits) {
+                                globalVisits = { control: controlVisits, variant: variantVisits };
+                            }
+                        }
+                        continue;
+                    }
+
+                    if (prefix && prefix.startsWith('0 All Visits') && (!label || label.trim() === '')) {
+                        continue;
+                    }
+
+                } else if (row.length === 3) {
+                    prefix = '';
+                    label = row[0];
+                    valA = parseFloat(row[1]);
+                    valB = parseFloat(row[2]);
+
+                    if (label === 'Segments') {
+                        const controlVisits = parseInt(row[1]);
+                        const variantVisits = parseInt(row[2]);
+                        if (!isNaN(controlVisits) && !isNaN(variantVisits)) {
+                            currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                            if (!globalVisits) {
+                                globalVisits = { control: controlVisits, variant: variantVisits };
+                            }
+                        }
+                        continue;
+                    }
+
+                    // Check for TSV format where first row contains visit counts (All visits)
+                    if (label && (label.toLowerCase().includes('all visits') || label.startsWith('0.')) && !isNaN(valA) && !isNaN(valB)) {
+                        const controlVisits = parseInt(valA);
+                        const variantVisits = parseInt(valB);
+                        if (controlVisits > 0 && variantVisits > 0) {
+                            currentSectionVisits = { control: controlVisits, variant: variantVisits };
+                            if (!globalVisits) {
+                                globalVisits = { control: controlVisits, variant: variantVisits };
+                            }
+                            console.log('TSV: Extracted visit counts from', label, '- Control:', controlVisits, 'Variant:', variantVisits);
+                        }
+                        // Don't continue here - also process this as a metric
+                    }
+
+                    if (label && label.startsWith('0 All Visits') && !isNaN(valA) && !isNaN(valB)) {
+                        continue;
+                    }
+
+                } else {
+                    continue;
+                }
+
+                // Skip formatting rows
+                if ((prefix && prefix.startsWith('#')) || (label && label.startsWith('#'))) {
+                    continue;
+                }
+
+                // Process valid metric rows
+                if (label && label !== "Metrics" && !isNaN(valA) && !isNaN(valB) && valA !== null && valB !== null) {
+                    const metricData = {
+                        label,
+                        valA,
+                        valB,
+                        hasBayesianData: false,
+                        section: currentSection,
+                        controlVisits: null,
+                        controlConversions: null,
+                        variantVisits: null,
+                        variantConversions: null
+                    };
+
+                    // Store visit data for potential Bayesian calculation
+                    if (currentSectionVisits || globalVisits) {
+                        const visitsToUse = currentSectionVisits || globalVisits;
+                        metricData.controlVisits = visitsToUse.control;
+                        metricData.variantVisits = visitsToUse.variant;
+                    }
+
+                    data.push(metricData);
+                }
+            }
+
+            return { data, globalVisits };
+        }
+
+        function applyBayesianCalculations(data, bayesianMetrics) {
+            return data.map(item => {
+                if (bayesianMetrics.includes(item.label) && item.controlVisits && item.variantVisits) {
+                    let controlConversions, variantConversions;
+
+                    if (item.label.toLowerCase().includes('(hit)')) {
+                        controlConversions = Math.round(item.valA);
+                        variantConversions = Math.round(item.valB);
+                    } else {
+                        controlConversions = Math.round(item.valA * item.controlVisits);
+                        variantConversions = Math.round(item.valB * item.variantVisits);
+                    }
+
+                    return {
+                        ...item,
+                        controlConversions,
+                        variantConversions,
+                        hasBayesianData: true
+                    };
+                }
+                return item;
+            });
+        }
+
+        // Main CSV processing function
+        function processCSVData(csvText) {
+            try {
+                // Extract ATP number
+                const atpNumber = extractATPFromCSV(csvText);
+                if (!atpNumber) {
+                    showError('No ATP number found in CSV data. Please ensure your data contains an ATP-XXXX identifier.');
+                    return;
+                }
+
+                console.log('Detected ATP:', atpNumber);
+                currentATP = atpNumber;
+
+                // Extract date information from CSV
+                const csvDateInfo = extractStartDateFromCSV(csvText);
+                console.log('CSV date info:', csvDateInfo);
+
+                // Parse CSV data
+                const parseResult = parseCSVData(csvText);
+                currentData = parseResult.data;
+                currentGlobalVisits = parseResult.globalVisits;
+                console.log('Parsed data:', currentData.length, 'metrics');
+                console.log('Global visits:', currentGlobalVisits);
+
+                if (currentData.length === 0) {
+                    showError('No valid metrics found in CSV data.');
+                    return;
+                }
+
+                // Check if we have configuration for this ATP
+                const existingConfig = loadConfiguration(atpNumber);
+
+                // Helper function to format date as YYYY-MM-DD in local timezone
+                const formatDateLocal = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                // Handle date conflict if CSV has date and config already has a different date
+                if (csvDateInfo && existingConfig && existingConfig.startDate && existingConfig.startDate !== formatDateLocal(csvDateInfo.startDate)) {
+                    if (confirm(`Date conflict detected!\n\nSaved date: ${existingConfig.startDate}\nCSV date: ${csvDateInfo.startDate.toDateString()}\n\nWould you like to overwrite the saved date with the CSV date?`)) {
+                        existingConfig.startDate = formatDateLocal(csvDateInfo.startDate);
+                        existingConfig.csvDateInfo = csvDateInfo;
+                        saveConfiguration(atpNumber, existingConfig);
+                        console.log('Updated configuration with CSV date');
+                    }
+                } else if (csvDateInfo && existingConfig && !existingConfig.startDate) {
+                    // Auto-fill if no existing date
+                    existingConfig.startDate = formatDateLocal(csvDateInfo.startDate);
+                    existingConfig.csvDateInfo = csvDateInfo;
+                    saveConfiguration(atpNumber, existingConfig);
+                    console.log('Auto-filled start date from CSV');
+                }
+
+                if (existingConfig) {
+                    console.log('Using existing configuration for', atpNumber, existingConfig);
+                    processDataWithConfiguration(atpNumber, existingConfig);
+                } else {
+                    console.log('No configuration found for', atpNumber, 'showing config screen');
+                    const metrics = getAllMetricNames(currentData);
+                    showConfigurationScreen(atpNumber, metrics, csvDateInfo);
+                }
+
+            } catch (error) {
+                console.error('Error in processCSVData:', error);
+                showError('Error processing data: ' + error.message);
+            }
+        }
+
+        function processDataWithConfiguration(atpNumber, config) {
+            if (!currentData.length && !currentGlobalVisits) {
+                // No new data provided, check for stored data
+                const storedData = loadStoredData(atpNumber);
+                if (storedData) {
+                    // Convert stored metrics back to array format
+                    const reconstructedData = Object.entries(storedData.metrics).map(([label, data]) => ({
+                        label,
+                        ...data,
+                        hasBayesianData: false,
+                        section: ''
+                    }));
+
+                    const dataWithBayesian = applyBayesianCalculations(reconstructedData, config.bayesian);
+
+                    // Show age warning modal
+                    /*
+                    showDataAgeWarning(storedData.timestamp, () => {
+                        displayResults(dataWithBayesian, config, storedData.globalVisits);
+                    });
+                    */
+                    displayResults(dataWithBayesian, config, storedData.globalVisits);
+                    return;
+                }
+            } else {
+                // New data provided, process and store it
+                const dataWithBayesian = applyBayesianCalculations(currentData, config.bayesian);
+                const storableMetrics = extractStorableMetrics(currentData, config);
+
+                // Save the minimal dataset with globalVisits
+                saveConfiguration(atpNumber, { ...config, globalVisits: currentGlobalVisits }, storableMetrics);
+
+                displayResults(dataWithBayesian, config, currentGlobalVisits);
+            }
+        }
+
+        function showDataAgeWarning(timestamp, onContinue) {
+            const ageString = formatTimeDiff(timestamp);
+
+            const modal = document.createElement('div');
+            modal.className = 'share-overlay';
+            modal.innerHTML = `
+                <div class="share-dialog">
+                    <h3>Loaded Saved Data</h3>
+                    <p>This data was generated ${ageString}. Would you like to:</p>
+                    <div class="share-actions">
+                        <button class="btn btn-secondary" id="loadNewData">Load New Data</button>
+                        <button class="btn btn-primary" id="continueOldData">Continue with Saved Data</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            document.getElementById('loadNewData').onclick = () => {
+                modal.remove();
+                showUploadSection();
+            };
+
+            document.getElementById('continueOldData').onclick = () => {
+                modal.remove();
+                onContinue();
+            };
+        }
+
+        // UI State Management
+        function showUploadSection() {
+            document.getElementById('uploadSection').classList.remove('hidden');
+            document.getElementById('configScreen').classList.add('hidden');
+            document.getElementById('resultsContainer').classList.add('hidden');
+            document.getElementById('csvInput').value = '';
+            currentData = [];
+            currentATP = null;
+            currentGlobalVisits = null;
+            currentFileName = null;
+            updateSidebarActiveState(null);
+        }
+
+        // Sidebar functionality
+        function initializeSidebar() {
+            document.getElementById('refreshSidebar').addEventListener('click', loadSavedExperiments);
+            initializeSidebarDropZone();
+        }
+
+        function initializeSidebarDropZone() {
+            const sidebarDropZone = document.getElementById('sidebarDropZone');
+
+            // Handle drag and drop
+            sidebarDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                sidebarDropZone.classList.add('dragover');
+            });
+
+            sidebarDropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                sidebarDropZone.classList.remove('dragover');
+            });
+
+            sidebarDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                sidebarDropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFiles(files);
+                }
+            });
+
+            // Handle click to open file dialog
+            sidebarDropZone.addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+        }
+
+        function loadSavedExperiments() {
+            const configs = JSON.parse(localStorage.getItem('atpConfigurations') || '{}');
+            const experimentsList = document.getElementById('experimentsList');
+            
+            if (Object.keys(configs).length === 0) {
+                experimentsList.innerHTML = '<div class="no-experiments">No saved experiments</div>';
+                return;
+            }
+
+            let html = '';
+            for (const [atpNumber, config] of Object.entries(configs)) {
+                const dateTimeString = config.timestamp ? new Date(config.timestamp).toLocaleString() : 'No date';
+                const timeAgo = config.timestamp ? formatTimeDiff(config.timestamp) : '';
+                html += `
+                    <div class="experiment-item" data-atp="${atpNumber}">
+                        <div class="name">${config.name || 'Unnamed Experiment'}</div>
+                        <div class="atp">${atpNumber}</div>
+                        <div class="date">Last updated: ${dateTimeString}</div>
+                        <div class="time-ago">${timeAgo}</div>
+                        <div class="delete-btn" data-atp="${atpNumber}" title="Delete experiment">×</div>
+                    </div>
+                `;
+            }
+            
+            experimentsList.innerHTML = html;
+            
+            // Add click handlers
+            experimentsList.querySelectorAll('.experiment-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Don't load experiment if delete button was clicked
+                    if (e.target.classList.contains('delete-btn')) {
+                        return;
+                    }
+                    const atpNumber = item.dataset.atp;
+                    loadExperiment(atpNumber);
+                });
+            });
+            
+            // Add delete handlers
+            experimentsList.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const atpNumber = btn.dataset.atp;
+                    deleteExperiment(atpNumber);
+                });
+            });
+        }
+
+        function loadExperiment(atpNumber) {
+            const config = loadConfiguration(atpNumber);
+            if (!config) {
+                showError('Experiment configuration not found.');
+                return;
+            }
+
+            currentATP = atpNumber;
+            currentData = [];
+            currentGlobalVisits = null;
+            currentFileName = null;
+
+            updateSidebarActiveState(atpNumber);
+            processDataWithConfiguration(atpNumber, config);
+        }
+
+        function updateSidebarActiveState(activeATP) {
+            document.querySelectorAll('.experiment-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.atp === activeATP);
+            });
+        }
+
+        function deleteExperiment(atpNumber) {
+            if (confirm(`Are you sure you want to delete experiment ${atpNumber}?`)) {
+                const configs = JSON.parse(localStorage.getItem('atpConfigurations') || '{}');
+                delete configs[atpNumber];
+                localStorage.setItem('atpConfigurations', JSON.stringify(configs));
+                
+                // If we're currently viewing this experiment, go back to upload screen
+                if (currentATP === atpNumber) {
+                    showUploadSection();
+                }
+                
+                // Refresh sidebar
+                loadSavedExperiments();
+            }
+        }
+
+        function showConfigScreen() {
+            document.getElementById('uploadSection').classList.add('hidden');
+            document.getElementById('configScreen').classList.remove('hidden');
+            document.getElementById('resultsContainer').classList.add('hidden');
+        }
+
+        function showResults() {
+            document.getElementById('uploadSection').classList.add('hidden');
+            document.getElementById('configScreen').classList.add('hidden');
+            document.getElementById('resultsContainer').classList.remove('hidden');
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            
+            // Remove any existing error messages
+            document.querySelectorAll('.error').forEach(el => el.remove());
+            
+            // Add new error message
+            document.querySelector('.content').insertBefore(errorDiv, document.querySelector('.content').firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            
+            // Remove any existing success messages
+            document.querySelectorAll('.success').forEach(el => el.remove());
+            
+            // Add new success message
+            document.querySelector('.content').insertBefore(successDiv, document.querySelector('.content').firstChild);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        function showProcessingMessage(message) {
+            const processingDiv = document.createElement('div');
+            processingDiv.id = 'processingMessage';
+            processingDiv.className = 'processing';
+            processingDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; border: 2px solid #007cba; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Remove any existing processing messages
+            document.querySelectorAll('#processingMessage').forEach(el => el.remove());
+            
+            // Add new processing message
+            document.querySelector('.content').insertBefore(processingDiv, document.querySelector('.content').firstChild);
+        }
+
+        function hideProcessingMessage() {
+            const processingDiv = document.getElementById('processingMessage');
+            if (processingDiv) {
+                processingDiv.remove();
+            }
+        }
+
+        function showBatchProcessingSummary(results) {
+            let summaryHtml = '<h3>Batch Processing Summary</h3>';
+            
+            if (results.processed.length > 0) {
+                summaryHtml += `<h4 style="color: #28a745;">✅ Processed (${results.processed.length})</h4><ul>`;
+                results.processed.forEach(item => {
+                    summaryHtml += `<li><strong>${item.name}</strong> (${item.atp}) - ${item.metrics} metrics from ${item.file}</li>`;
+                });
+                summaryHtml += '</ul>';
+            }
+            
+            if (results.skipped.length > 0) {
+                summaryHtml += `<h4 style="color: #ffc107;">⚠️ Skipped (${results.skipped.length})</h4><ul>`;
+                results.skipped.forEach(item => {
+                    summaryHtml += `<li><strong>${item.file}</strong> (${item.atp}) - ${item.reason}</li>`;
+                });
+                summaryHtml += '</ul>';
+            }
+            
+            if (results.errors.length > 0) {
+                summaryHtml += `<h4 style="color: #dc3545;">❌ Errors (${results.errors.length})</h4><ul>`;
+                results.errors.forEach(error => {
+                    summaryHtml += `<li>${error}</li>`;
+                });
+                summaryHtml += '</ul>';
+            }
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'share-overlay';
+            modal.innerHTML = `
+                <div class="share-dialog" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    ${summaryHtml}
+                    <div class="share-actions">
+                        <button class="btn btn-primary" onclick="this.closest('.share-overlay').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // Continue with the rest of the functions...
+        // [I'll continue with the remaining functions in the next part due to length constraints]
+
+        // Typeahead Dropdown Component
+        function createTypeaheadDropdown(id, placeholder, options, selectedValue = '', maxSelections = 1) {
+            const isMultiple = maxSelections > 1;
+            const selectedItems = isMultiple ? (Array.isArray(selectedValue) ? selectedValue : []) : (selectedValue ? [selectedValue] : []);
+
+            const hasReachedMax = selectedItems.length >= maxSelections;
+
+            return `
+                <div class="typeahead-container" data-max="${maxSelections}">
+                    <div class="typeahead-input-container" id="${id}_container">
+                        ${selectedItems.map(item =>
+                            `<span class="selected-tag">${item} <span class="remove-tag" data-value="${item}">×</span></span>`
+                        ).join('')}
+                        <input type="text" id="${id}" placeholder="${placeholder}" value=""
+                               class="typeahead-input" autocomplete="off" style="display: ${hasReachedMax ? 'none' : 'flex'};">
+                        <span class="dropdown-arrow" style="display: ${hasReachedMax ? 'none' : 'block'};">▼</span>
+                    </div>
+                    <div class="typeahead-dropdown" id="${id}_dropdown" style="display: none;">
+                        ${options.map(option =>
+                            `<div class="typeahead-option" data-value="${option}"
+                                  style="display: ${selectedItems.includes(option) ? 'none' : 'block'}">${option}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function initializeTypeahead(id, options, maxSelections = 1, onSelectionChange = null) {
+            const input = document.getElementById(id);
+            const dropdown = document.getElementById(id + '_dropdown');
+            const container = document.getElementById(id + '_container');
+            const arrow = container.querySelector('.dropdown-arrow');
+            const isMultiple = maxSelections > 1;
+            let selectedItems = [];
+
+            // Pre-fill selected items from the initial render
+            container.querySelectorAll('.selected-tag').forEach(tag => {
+                selectedItems.push(tag.textContent.trim().replace(/×$/, '').trim());
+            });
+
+            // Show dropdown on click or focus
+            input.addEventListener('focus', () => {
+                dropdown.style.display = 'block';
+                filterOptions('');
+            });
+
+            input.addEventListener('click', () => {
+                dropdown.style.display = 'block';
+                filterOptions('');
+            });
+
+            // Filter options as user types
+            input.addEventListener('input', (e) => {
+                filterOptions(e.target.value);
+                dropdown.style.display = 'block';
+            });
+
+            // Handle option selection
+            dropdown.addEventListener('click', (e) => {
+                if (e.target.classList.contains('typeahead-option')) {
+                    const value = e.target.dataset.value;
+
+                    if (selectedItems.length < maxSelections && !selectedItems.includes(value)) {
+                        selectedItems.push(value);
+                        addSelectedTag(value);
+                        e.target.style.display = 'none';
+                        input.value = '';
+
+                        if (selectedItems.length >= maxSelections) {
+                            input.style.display = 'none';
+                            arrow.style.display = 'none';
+                            dropdown.style.display = 'none';
+                        }
+
+                        if (onSelectionChange) {
+                            onSelectionChange(isMultiple ? selectedItems : selectedItems[0]);
+                        }
+                    }
+                }
+            });
+
+            // Handle tag removal
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-tag')) {
+                    const value = e.target.dataset.value;
+                    selectedItems = selectedItems.filter(item => item !== value);
+                    e.target.parentElement.remove();
+
+                    // Show the option again
+                    const option = dropdown.querySelector(`[data-value="${value}"]`);
+                    if (option) option.style.display = 'block';
+
+                    if (selectedItems.length < maxSelections) {
+                        input.style.display = 'flex';
+                        arrow.style.display = 'block';
+                    }
+
+                    if (onSelectionChange) {
+                        onSelectionChange(isMultiple ? selectedItems : (selectedItems.length > 0 ? selectedItems[0] : ''));
+                    }
+                }
+            });
+
+            function addSelectedTag(value) {
+                const tag = document.createElement('span');
+                tag.className = 'selected-tag';
+                tag.innerHTML = `${value} <span class="remove-tag" data-value="${value}">×</span>`;
+                container.insertBefore(tag, input);
+            }
+
+            function filterOptions(query) {
+                const options = dropdown.querySelectorAll('.typeahead-option');
+                options.forEach(option => {
+                    const isAlreadySelected = selectedItems.includes(option.dataset.value);
+                    const matchesQuery = option.textContent.toLowerCase().includes(query.toLowerCase());
+
+                    option.style.display = (matchesQuery && !isAlreadySelected) ? 'block' : 'none';
+                });
+            }
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            return {
+                getValue: () => {
+                    if (isMultiple) return selectedItems;
+                    return selectedItems.length > 0 ? selectedItems[0] : '';
+                },
+                setValue: (value) => {
+                    // Clear everything first
+                    container.querySelectorAll('.selected-tag').forEach(tag => tag.remove());
+                    dropdown.querySelectorAll('.typeahead-option').forEach(opt => opt.style.display = 'block');
+                    selectedItems = [];
+
+                    const valuesToSet = isMultiple ? (Array.isArray(value) ? value : []) : (value ? [value] : []);
+
+                    valuesToSet.forEach(v => {
+                        if (selectedItems.length < maxSelections) {
+                            selectedItems.push(v);
+                            addSelectedTag(v);
+                            const option = dropdown.querySelector(`[data-value="${v}"]`);
+                            if (option) option.style.display = 'none';
+                        }
+                    });
+
+                    const hasReachedMax = selectedItems.length >= maxSelections;
+                    input.style.display = hasReachedMax ? 'none' : 'flex';
+                    arrow.style.display = hasReachedMax ? 'none' : 'block';
+                    input.value = '';
+                }
+            };
+        }
+
+        // Configuration Screen Functions
+        function showConfigurationScreen(atpNumber, metrics, csvDateInfo = null) {
+            const existingConfig = loadConfiguration(atpNumber) || {};
+            let defaultStartDate = existingConfig.startDate || '';
+
+            // Auto-fill from CSV if no existing date
+            if (!defaultStartDate && csvDateInfo) {
+                // Format date as YYYY-MM-DD in local timezone
+                const date = csvDateInfo.startDate;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                defaultStartDate = `${year}-${month}-${day}`;
+            }
+
+            document.getElementById('configScreen').innerHTML = `
+                <div class="config-section">
+                    <h3>Configure Experiment: ${atpNumber}</h3>
+                    <p>This is the first time we've seen this experiment. Please configure the metrics display settings.</p>
+                    ${csvDateInfo ? `<p style="color: #007cba; font-size: 14px; margin-bottom: 15px;">
+                        <strong>Date range detected from CSV:</strong> ${csvDateInfo.startDateStr} - ${csvDateInfo.endDateStr}
+                    </p>` : ''}
+
+                    <div class="form-group">
+                        <label for="experimentName">Experiment Name:</label>
+                        <input type="text" id="experimentName" value="${existingConfig.name || currentFileName || ''}" placeholder="Enter a descriptive name for this experiment">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="primaryKPI">Primary KPI (select one):</label>
+                        ${createTypeaheadDropdown('primaryKPI', 'Search and select primary KPI...', metrics, existingConfig.primary || '', 1)}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="secondaryKPIs">Secondary KPIs (select up to 5):</label>
+                        ${createTypeaheadDropdown('secondaryKPIs', 'Search and select secondary KPIs...', metrics, existingConfig.secondary || [], 5)}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sampleSize">Target Sample Size (per variant):</label>
+                        <input type="text" id="sampleSize" value="${existingConfig.sampleSize || ''}" placeholder="e.g. 10,000 (optional)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startDate">Start Date (optional):</label>
+                        <input type="date" id="startDate" value="${defaultStartDate}" placeholder="Select start date">
+                        <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                            Can leave blank, it will autofill from the CSV if available${csvDateInfo ? ' (this one was auto-filled from CSV)' : ''}
+                        </small>
+                    </div>
+
+                    <div class="bayesian-config">
+                        <h4>Bayesian Calculation Settings</h4>
+                        <p>Select which metrics should include Bayesian probability calculation:</p>
+                        <div id="bayesianOptions"></div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="cancelConfig">Cancel</button>
+                        <button class="btn btn-primary" id="saveConfig">Save Configuration</button>
+                    </div>
+                </div>
+            `;
+
+            // Store CSV date info for later use
+            const storedCsvDateInfo = csvDateInfo;
+
+            showConfigScreen();
+
+            // Initialize typeahead dropdowns
+            const primaryDropdown = initializeTypeahead('primaryKPI', metrics, 1, updateBayesianOptions);
+            const secondaryDropdown = initializeTypeahead('secondaryKPIs', metrics, 5, updateBayesianOptions);
+
+            // Set existing values
+            if (existingConfig.primary) primaryDropdown.setValue(existingConfig.primary);
+            if (existingConfig.secondary) secondaryDropdown.setValue(existingConfig.secondary);
+
+            function updateBayesianOptions() {
+                const primary = primaryDropdown.getValue();
+                const secondary = secondaryDropdown.getValue();
+                const allSelected = [primary, ...(Array.isArray(secondary) ? secondary : [])].filter(Boolean);
+
+                const bayesianContainer = document.getElementById('bayesianOptions');
+                bayesianContainer.innerHTML = allSelected.map(metric => `
+                    <div class="bayesian-item">
+                        <input type="checkbox" id="bayesian_${metric.replace(/[^a-zA-Z0-9]/g, '_')}"
+                               ${existingConfig.bayesian && existingConfig.bayesian.includes(metric) ? 'checked' : ''}>
+                        <label for="bayesian_${metric.replace(/[^a-zA-Z0-9]/g, '_')}">${metric}</label>
+                    </div>
+                `).join('');
+            }
+
+            updateBayesianOptions();
+
+            // Handle save configuration
+            document.getElementById('saveConfig').onclick = () => {
+                const name = document.getElementById('experimentName').value.trim();
+                const primary = primaryDropdown.getValue();
+                const secondary = secondaryDropdown.getValue();
+                const sampleSizeInput = document.getElementById('sampleSize').value.trim();
+                const startDateInput = document.getElementById('startDate').value.trim();
+
+                if (!name) {
+                    showError('Please enter an experiment name.');
+                    return;
+                }
+
+                if (!primary) {
+                    showError('Please select a primary KPI.');
+                    return;
+                }
+
+                // Process sample size - strip spaces and commas, convert to integer
+                let sampleSize = null;
+                if (sampleSizeInput) {
+                    const cleanedInput = sampleSizeInput.replace(/[\s,]/g, '');
+                    const parsedSize = parseInt(cleanedInput);
+                    if (!isNaN(parsedSize) && parsedSize > 0) {
+                        sampleSize = parsedSize;
+                    }
+                }
+
+                // Get selected Bayesian options
+                const bayesian = [];
+                document.querySelectorAll('#bayesianOptions input[type="checkbox"]:checked').forEach(cb => {
+                    const label = cb.nextElementSibling.textContent;
+                    bayesian.push(label);
+                });
+
+                const config = {
+                    name,
+                    primary,
+                    secondary: Array.isArray(secondary) ? secondary : [],
+                    bayesian,
+                    sampleSize,
+                    startDate: startDateInput || null,
+                    csvDateInfo: storedCsvDateInfo || null
+                };
+
+                saveConfiguration(atpNumber, config);
+                console.log('Saved configuration for', atpNumber, config);
+
+                // Refresh sidebar to show new/updated experiment
+                loadSavedExperiments();
+                updateSidebarActiveState(atpNumber);
+
+                processDataWithConfiguration(atpNumber, config);
+            };
+
+            // Handle cancel
+            document.getElementById('cancelConfig').onclick = () => {
+                if (document.getElementById('resultsContainer').innerHTML.trim() !== '') {
+                    showResults();
+                } else {
+                    showUploadSection();
+                }
+            };
+        }
+
+        // Experiment Analytics Functions
+        function calculateExperimentAnalytics(config, globalVisits) {
+            const analytics = {
+                daysRunning: null,
+                dailyTrafficRate: null,
+                projectedEndDate: null
+            };
+
+            if (!config.startDate || !globalVisits) {
+                return analytics;
+            }
+
+            // Parse the start date more reliably
+            const startDateParts = config.startDate.split('-'); // e.g., "2025-07-10" -> ["2025", "07", "10"]
+            const startDate = new Date(parseInt(startDateParts[0]), parseInt(startDateParts[1]) - 1, parseInt(startDateParts[2])); // Month is 0-indexed
+
+            const currentDate = new Date(); // Now
+
+            // Get today's date at midnight in local time
+            const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+            // Calculate the difference in milliseconds and convert to days
+            const timeDiff = today.getTime() - startDate.getTime();
+            const dayDifference = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+            // Days running is the difference + 1 (to include the start day)
+            analytics.daysRunning = dayDifference + 1;
+
+            if (analytics.daysRunning > 0) {
+                // Calculate daily traffic rate (using smaller variant to be conservative)
+                const dailyVisits = Math.min(globalVisits.control, globalVisits.variant) / analytics.daysRunning;
+                analytics.dailyTrafficRate = Math.round(dailyVisits);
+
+                // Calculate projected end date if sample size is set
+                if (config.sampleSize && dailyVisits > 0) {
+                    if (analytics.daysRunning <= 4) {
+                        analytics.projectedEndDate = "Need 5 days data to estimate end date";
+                    } else {
+                        const remainingVisits = Math.max(0, config.sampleSize - Math.min(globalVisits.control, globalVisits.variant));
+                        const conservativeRate = dailyVisits * 0.90; // 10% more conservative
+                        const remainingDays = Math.ceil(remainingVisits / conservativeRate);
+
+                        const projectedEnd = new Date(currentDate);
+                        projectedEnd.setDate(projectedEnd.getDate() + remainingDays);
+                        analytics.projectedEndDate = projectedEnd;
+                    }
+                }
+            }
+
+            return analytics;
+        }
+
+        function shouldShowRevenueProjection(analytics, config, data) {
+            return true; // Always show for now
+        }
+
+        function calculateRevenueProjection(analytics, config, data) {
+            const revenueMetric = data.find(item => item.label === "Revenue (incl. C&C) - SPR");
+            const mainMetric = data.find(item => item.label === config.primary);
+
+            if (!revenueMetric || !mainMetric || !analytics.daysRunning) {
+                return null;
+            }
+
+            // Calculate total revenue (control + variant)
+            const totalRevenue = revenueMetric.valA + revenueMetric.valB;
+
+            // Calculate daily revenue
+            const dailyRevenue = totalRevenue / analytics.daysRunning;
+
+            // Calculate main metric percentage change
+            const mainMetricChange = ((mainMetric.valB - mainMetric.valA) / mainMetric.valA * 100);
+
+            // Calculate daily impact (applying main metric change to revenue)
+            const dailyImpact = dailyRevenue * (mainMetricChange / 100);
+
+            // Calculate annual impact
+            const annualRevenue = Math.round(dailyImpact * 365);
+
+            return {
+                annualRevenue,
+                mainMetricChange: mainMetricChange.toFixed(2)
+            };
+        }
+
+        function formatExperimentInfo(analytics, config, globalVisits, data) {
+            // Calculate revenue projection if criteria are met
+            let revenueProjectionHtml = '';
+            if (shouldShowRevenueProjection(analytics, config, data)) {
+                const projection = calculateRevenueProjection(analytics, config, data);
+                if (projection) {
+                    revenueProjectionHtml = `
+                        <div class="revenue-tooltip">
+                            <div class="revenue-tooltip-text">
+                                Annual incremental revenue: €${projection.annualRevenue.toLocaleString()}<br>
+                                Based on current uplift of ${projection.mainMetricChange}% on main metric
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            let html = `
+                <div class="experiment-info">
+                    <div class="experiment-meta">
+                        <h3 style="position: relative; display: inline-block;">
+                            ${config.name}
+                            ${revenueProjectionHtml}
+                        </h3>
+                        <span>Experiment: <a href="https://jira.tools.3stripes.net/browse/${currentATP}" target="_blank" rel="noopener noreferrer">${currentATP}</a> | Generated: ${new Date().toLocaleDateString()}</span>
+                    </div>
+            `;
+
+            if (analytics.daysRunning) {
+                html += `
+                    <div class="experiment-stats">
+                        <div>
+                            <strong>Days Running:</strong> ${analytics.daysRunning} day${analytics.daysRunning !== 1 ? 's' : ''}
+                        </div>
+                `;
+
+                if (analytics.dailyTrafficRate) {
+                    html += `
+                        <div>
+                            <strong>Daily Traffic Rate:</strong> ${analytics.dailyTrafficRate.toLocaleString()} visits/day
+                            <small style="color: #666; display: block;">per variant</small>
+                        </div>
+                    `;
+                }
+
+                if (analytics.projectedEndDate) {
+                    const today = new Date();
+                    const isProjected = analytics.projectedEndDate instanceof Date && analytics.projectedEndDate > today;
+                    const isStringMessage = typeof analytics.projectedEndDate === 'string';
+
+                    // Use "Projected End Date" for string messages (like "Need 5 days data...") and future dates
+                    const projectedText = (isStringMessage || isProjected) ? 'Projected End Date' : 'Would Have Ended';
+
+                    html += `
+                        <div>
+                            <strong>${projectedText}:</strong> ${analytics.projectedEndDate instanceof Date ? analytics.projectedEndDate.toDateString() : analytics.projectedEndDate}
+                            <small style="color: #666; display: block;">${isProjected ? 'based on current traffic rate' : ''}</small>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    </div>
+                `;
+            }
+
+            // Add progress bar if sample size is configured
+            if (config.sampleSize && globalVisits) {
+                const currentSampleSize = Math.min(globalVisits.control, globalVisits.variant);
+                const percentage = Math.min(100, (currentSampleSize / config.sampleSize) * 100);
+                const isComplete = percentage >= 100;
+
+                const progressText = isComplete
+                    ? 'SAMPLE SIZE REACHED'
+                    : `${percentage.toFixed(0)}% of sample size collected, ${currentSampleSize.toLocaleString()} out of ${config.sampleSize.toLocaleString()}`;
+
+                html += `
+                    <div class="progress-bar">
+                        <div class="progress-fill${isComplete ? ' complete' : ''}" style="width: ${percentage}%"></div>
+                        <div class="progress-markers">
+                            <div class="progress-marker" style="left: 20%;"></div>
+                            <div class="progress-marker" style="left: 40%;"></div>
+                            <div class="progress-marker" style="left: 60%;"></div>
+                            <div class="progress-marker" style="left: 80%;"></div>
+                        </div>
+                        <div class="progress-text">${progressText}</div>
+                    </div>
+                `;
+            }
+
+            html += `
+                </div>
+            `;
+
+            return html;
+        }
+
+        // Function to determine Bayesian cell background color
+        function getBayesianCellColor(probability, isPrimary) {
+            const prob = probability * 100; // Convert to percentage
+
+            if (isPrimary) {
+                // Primary metrics thresholds
+                if (prob >= 0 && prob <= 5) return '#df4d2d';
+                if (prob > 5 && prob <= 15) return '#f0be3c';
+                if (prob >= 85 && prob < 95) return '#f0be3c';
+                if (prob >= 95 && prob <= 100) return '#52b47e';
+            } else {
+                // Secondary metrics thresholds
+                if (prob >= 0 && prob <= 2) return '#df4d2d';
+                if (prob > 2 && prob <= 10) return '#f0be3c';
+                if (prob >= 90 && prob < 98) return '#f0be3c';
+                if (prob >= 98 && prob <= 100) return '#52b47e';
+            }
+
+            return ''; // No highlighting for middle ranges
+        }
+
+        function displayResults(data, config, globalVisits) {
+            const primaryData = data.filter(item => item.label === config.primary);
+            const secondaryData = data.filter(item => config.secondary.includes(item.label));
+            const everythingElse = data.filter(item =>
+                item.label !== config.primary && !config.secondary.includes(item.label)
+            );
+
+            // Calculate experiment analytics
+            const analytics = calculateExperimentAnalytics(config, globalVisits);
+
+            const createTable = (title, filteredRows, sectionVisits = null, isPrimary = false) => {
+                let html = `<tr><th colspan="5" class="section">${title}</th></tr>`;
+                if (sectionVisits && sectionVisits.control && sectionVisits.variant) {
+                    html += `<tr><td colspan="5" style="font-size:11px; color:#666; text-align:center;">
+                        Section visits: Control ${sectionVisits.control.toLocaleString()}, Variant ${sectionVisits.variant.toLocaleString()}
+                    </td></tr>`;
+                }
+                html += '<tr><th>Metric</th><th>Control</th><th>Variant</th><th>% Change</th><th>Prob. v1>control</th></tr>';
+
+                for (const row of filteredRows) {
+                    const change = ((row.valB - row.valA) / row.valA * 100);
+                    const changeText = isFinite(change) ? change.toFixed(2) + '%' : '–';
+
+                    const changeWithTooltip = changeText === '–' ? changeText :
+                        `<span class="debug-tooltip">${changeText}<span class="debug-tooltip-text">Control: ${row.controlVisits?.toLocaleString() || 'N/A'} visits<br>Variant: ${row.variantVisits?.toLocaleString() || 'N/A'} visits</span></span>`;
+
+                    let bayesianProb = '–';
+                    let bayesianCellStyle = '';
+
+                    if (row.hasBayesianData) {
+                        const prob = calculateBayesianProb(
+                            row.controlVisits,
+                            row.controlConversions,
+                            row.variantVisits,
+                            row.variantConversions
+                        );
+                        bayesianProb = (prob * 100).toFixed(1) + '%';
+
+                        // Apply highlighting based on probability and metric type
+                        const bgColor = getBayesianCellColor(prob, isPrimary);
+                        if (bgColor) {
+                            bayesianCellStyle = `style="background-color: ${bgColor}; color: white; font-weight: bold;"`;
+                        }
+                    }
+
+                    const formatValue = (val) => {
+                        if (val == null || val === undefined || isNaN(val)) {
+                            return '–';
+                        }
+                        if (val > 0 && val < 1) {
+                            return (val * 100).toFixed(2) + '%';
+                        }
+                        return val.toLocaleString();
+                    };
+
+                    const createTooltipValue = (val, variant) => {
+                        const formattedVal = formatValue(val);
+                        if (formattedVal === '–') return formattedVal;
+
+                        const visits = variant === 'control' ? row.controlVisits : row.variantVisits;
+                        const tooltipText = visits ?
+                            `Sample size: ${visits.toLocaleString()} visits` :
+                            'No visit data available';
+
+                        return `<span class="debug-tooltip">${formattedVal}<span class="debug-tooltip-text">${tooltipText}</span></span>`;
+                    };
+
+                    const formattedA = createTooltipValue(row.valA, 'control');
+                    const formattedB = createTooltipValue(row.valB, 'variant');
+
+                    html += `<tr>
+                        <td>${row.label}</td>
+                        <td>${formattedA}</td>
+                        <td>${formattedB}</td>
+                        <td>${changeWithTooltip}</td>
+                        <td ${bayesianCellStyle}>${bayesianProb}</td>
+                    </tr>`;
+                }
+                return html;
+            };
+
+            let html = formatExperimentInfo(analytics, config, globalVisits, data) + '<table>';
+
+            if (primaryData.length > 0) {
+                html += createTable('PRIMARY KPI', primaryData, null, true);
+            }
+
+            if (secondaryData.length > 0) {
+                html += createTable('SECONDARY KPIs', secondaryData, null, false);
+            }
+
+            html += '</table>';
+
+            // Add actions bar and everything else section
+            if (everythingElse.length > 0) {
+                const sectionGroups = {};
+                for (const item of everythingElse) {
+                    const section = item.section || 'Other Metrics';
+                    if (!sectionGroups[section]) {
+                        sectionGroups[section] = [];
+                    }
+                    sectionGroups[section].push(item);
+                }
+
+                html += `
+                    <div class="actions-bar">
+                        <div class="left">
+                            <button class="btn btn-secondary" id="toggleExtra">Show Everything Else (${everythingElse.length} metrics)</button>
+                        </div>
+                        <div class="right">
+                            <button class="btn btn-success" id="shareBtn">📱 SHARE</button>
+                            <button class="btn btn-primary" id="settingsBtn">SETTINGS</button>
+                            <button class="btn btn-danger" id="resetBtn">BACK TO INPUT</button>
+                        </div>
+                    </div>
+                    <div class="extra-metrics hidden" id="extraMetrics">
+                        <table>
+                `;
+
+                for (const [sectionName, sectionData] of Object.entries(sectionGroups)) {
+                    if (sectionData.length > 0) {
+                        const itemWithVisits = sectionData.find(d => d.controlVisits && d.variantVisits);
+                        const sectionVisits = itemWithVisits ?
+                            { control: itemWithVisits.controlVisits, variant: itemWithVisits.variantVisits } : null;
+                        html += createTable(sectionName, sectionData, sectionVisits, false);
+                    }
+                }
+
+                html += `
+                        </table>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="actions-bar">
+                        <div class="left"></div>
+                        <div class="right">
+                            <button class="btn btn-success" id="shareBtn">📱 SHARE</button>
+                            <button class="btn btn-primary" id="settingsBtn">SETTINGS</button>
+                            <button class="btn btn-danger" id="resetBtn">BACK TO INPUT</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('resultsContainer').innerHTML = html;
+            showResults();
+            
+            // Update sidebar active state
+            updateSidebarActiveState(currentATP);
+
+            // Add event handlers
+            const toggleBtn = document.getElementById('toggleExtra');
+            if (toggleBtn) {
+                const extraCount = everythingElse.length;
+                toggleBtn.onclick = () => {
+                    const extra = document.getElementById('extraMetrics');
+                    const isHidden = extra.classList.contains('hidden');
+                    if (isHidden) {
+                        extra.classList.remove('hidden');
+                        toggleBtn.textContent = 'Hide Everything Else';
+                    } else {
+                        extra.classList.add('hidden');
+                        toggleBtn.textContent = `Show Everything Else (${extraCount} metrics)`;
+                    }
+                };
+            }
+
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn) {
+                shareBtn.onclick = () => shareResults(config);
+            }
+
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) {
+                settingsBtn.onclick = () => {
+                    if (!currentATP) {
+                        showError('No ATP experiment detected. Please upload CSV data first.');
+                        return;
+                    }
+                    const metrics = getAllMetricNames(currentData);
+                    const existingConfig = loadConfiguration(currentATP) || {};
+                    showConfigurationScreen(currentATP, metrics, existingConfig.csvDateInfo);
+                };
+            }
+
+            const resetBtn = document.getElementById('resetBtn');
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    showUploadSection();
+                };
+            }
+        }
+
+        // Share Functionality
+        function shareResults(config) {
+            const resultsElement = document.getElementById('resultsContainer');
+            const shareOverlay = document.createElement('div');
+            shareOverlay.className = 'share-overlay';
+            shareOverlay.innerHTML = `
+                <div class="share-dialog">
+                    <h3>Generating shareable image...</h3>
+                    <p>Please wait while we capture your results.</p>
+                </div>
+            `;
+            document.body.appendChild(shareOverlay);
+
+            // Create a clean version of the results for sharing
+            const cleanResults = resultsElement.cloneNode(true);
+
+            // Remove buttons and actions bar from the clone
+            cleanResults.querySelectorAll('.actions-bar').forEach(bar => bar.remove());
+            cleanResults.querySelectorAll('.extra-metrics').forEach(elem => {
+                if (elem.classList.contains('hidden')) elem.remove();
+            });
+
+            // Ensure all inline styles are preserved (especially Bayesian colors)
+            const originalCells = resultsElement.querySelectorAll('td[style]');
+            const clonedCells = cleanResults.querySelectorAll('td[style]');
+            originalCells.forEach((cell, index) => {
+                if (clonedCells[index]) {
+                    clonedCells[index].style.cssText = cell.style.cssText;
+                }
+            });
+
+            // Create temporary container for html2canvas with full styling
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+                background: white;
+                padding: 20px;
+                width: 800px;
+                font-family: Arial, sans-serif;
+            `;
+
+            // Add all the necessary styles inline to ensure they're captured
+            const styleElement = document.createElement('style');
+            styleElement.textContent = `
+                .temp-share-container, .temp-share-container * {
+                    font-family: Arial, sans-serif !important;
+                    box-sizing: border-box;
+                }
+                .temp-share-container {
+                    line-height: 1.4;
+                }
+                .temp-share-container table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                }
+                .temp-share-container th, .temp-share-container td {
+                    border: 1px solid #ccc;
+                    padding: 6px;
+                    text-align: left;
+                    font-size: 13px;
+                    vertical-align: top;
+                }
+                .temp-share-container th.section {
+                    background: #eee !important;
+                    font-weight: bold;
+                    text-align: center;
+                    font-size: 14px;
+                    color: #333;
+                }
+                .temp-share-container th {
+                    background: #f8f9fa !important;
+                    font-weight: bold;
+                    color: #333;
+                }
+                .temp-share-container td {
+                    background: white;
+                    color: #333;
+                }
+                .temp-share-container .experiment-info {
+                    background: #f8f9fa;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    font-size: 14px;
+                }
+                .temp-share-container h3 {
+                    color: #333;
+                    margin: 0;
+                    font-size: 1.5em;
+                    font-weight: bold;
+                }
+                .temp-share-container p {
+                    color: #666;
+                    font-size: 14px;
+                    margin: 0;
+                    line-height: 1.4;
+                }
+                .temp-share-container a {
+                    color: #007cba;
+                    text-decoration: none;
+                }
+                /* Ensure Bayesian color coding is preserved */
+                .temp-share-container td[style*="background-color"] {
+                    font-weight: bold !important;
+                    color: white !important;
+                }
+                /* Section headers styling */
+                .temp-share-container td[colspan="5"] {
+                    font-size: 11px;
+                    color: #666;
+                    text-align: center;
+                    font-style: italic;
+                    background: #f9f9f9 !important;
+                }
+                .temp-share-container .experiment-meta {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                }
+                .temp-share-container .experiment-stats {
+                    display: flex;
+                    width: 100%;
+                    margin-bottom: 15px;
+                }
+                .temp-share-container .experiment-stats > div {
+                    flex: 1;
+                    padding: 0 10px;
+                }
+                .temp-share-container .progress-bar {
+                    width: 100%;
+                    height: 40px;
+                    background-color: #f0f0f0;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    position: relative;
+                    overflow: hidden;
+                    margin-top: 10px;
+                }
+                .temp-share-container .progress-fill {
+                    height: 100%;
+                    background-color: #c8e6c9;
+                    position: relative;
+                }
+                .temp-share-container .progress-fill.complete {
+                    background-color: #4caf50;
+                }
+                .temp-share-container .progress-text {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-weight: bold;
+                    color: #333;
+                    font-size: 14px;
+                    z-index: 2;
+                    white-space: nowrap;
+                }
+                .temp-share-container .progress-markers {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 1;
+                }
+                .temp-share-container .progress-marker {
+                    position: absolute;
+                    top: 0;
+                    width: 2px;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.2);
+                }
+            `;
+
+            tempContainer.className = 'temp-share-container';
+            tempContainer.appendChild(styleElement);
+            tempContainer.appendChild(cleanResults);
+            document.body.appendChild(tempContainer);
+
+            // Use html2canvas to capture the image
+            html2canvas(tempContainer, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                width: 840,
+                height: tempContainer.scrollHeight + 40
+            }).then(canvas => {
+                // Remove temporary container
+                document.body.removeChild(tempContainer);
+
+                // Automatically copy to clipboard
+                canvas.toBlob(blob => {
+                    if (navigator.clipboard && window.ClipboardItem) {
+                        navigator.clipboard.write([
+                            new ClipboardItem({
+                                'image/png': blob
+                            })
+                        ]).then(() => {
+                            // Show success message
+                            shareOverlay.innerHTML = `
+                                <div class="share-dialog">
+                                    <h3>✅ Copied to Clipboard!</h3>
+                                    <p>Your results image is ready to paste into Slack, email, or any application.</p>
+                                </div>
+                            `;
+
+                            // Auto-dismiss after 2 seconds
+                            setTimeout(() => {
+                                if (document.body.contains(shareOverlay)) {
+                                    document.body.removeChild(shareOverlay);
+                                }
+                            }, 2000);
+
+                        }).catch(() => {
+                            // Fallback: show download option if clipboard fails
+                            shareOverlay.innerHTML = `
+                                <div class="share-dialog">
+                                    <h3>Clipboard Not Available</h3>
+                                    <p>Unable to copy to clipboard. Click below to download instead.</p>
+                                    <div class="share-actions">
+                                        <button class="btn btn-primary" id="downloadImage">Download Image</button>
+                                        <button class="btn btn-secondary" id="closeShare">Close</button>
+                                    </div>
+                                </div>
+                            `;
+
+                            document.getElementById('downloadImage').onclick = () => {
+                                const link = document.createElement('a');
+                                link.download = `${currentATP}_results_${new Date().toISOString().split('T')[0]}.png`;
+                                link.href = canvas.toDataURL();
+                                link.click();
+                                document.body.removeChild(shareOverlay);
+                            };
+
+                            document.getElementById('closeShare').onclick = () => {
+                                document.body.removeChild(shareOverlay);
+                            };
+                        });
+                    } else {
+                        // Fallback for browsers without clipboard API
+                        shareOverlay.innerHTML = `
+                            <div class="share-dialog">
+                                <h3>Clipboard Not Supported</h3>
+                                <p>Your browser doesn't support clipboard copying. Click below to download instead.</p>
+                                <div class="share-actions">
+                                    <button class="btn btn-primary" id="downloadImage">Download Image</button>
+                                    <button class="btn btn-secondary" id="closeShare">Close</button>
+                                </div>
+                            </div>
+                        `;
+
+                        document.getElementById('downloadImage').onclick = () => {
+                            const link = document.createElement('a');
+                            link.download = `${currentATP}_results_${new Date().toISOString().split('T')[0]}.png`;
+                            link.href = canvas.toDataURL();
+                            link.click();
+                            document.body.removeChild(shareOverlay);
+                        };
+
+                        document.getElementById('closeShare').onclick = () => {
+                            document.body.removeChild(shareOverlay);
+                        };
+                    }
+                });
+
+            }).catch(error => {
+                console.error('Error generating image:', error);
+                document.body.removeChild(tempContainer);
+                shareOverlay.innerHTML = `
+                    <div class="share-dialog">
+                        <h3>❌ Error</h3>
+                        <p>Failed to generate image. Please try again.</p>
+                        <button class="btn btn-secondary" onclick="this.closest('.share-overlay').remove()">Close</button>
+                    </div>
+                `;
+
+                // Auto-dismiss error after 3 seconds
+                setTimeout(() => {
+                    if (document.body.contains(shareOverlay)) {
+                        document.body.removeChild(shareOverlay);
+                    }
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html> 
