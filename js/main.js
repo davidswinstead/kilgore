@@ -796,6 +796,7 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         const item = document.createElement('div');
         item.textContent = option;
         item.className = 'typeahead-option';
+        item.dataset.optionValue = option; // Store the actual option value
         item.style.cssText = `
             padding: 8px 12px;
             cursor: pointer;
@@ -807,7 +808,10 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
         item.innerHTML = option.replace(regex, '<strong>$1</strong>');
         
         item.addEventListener('mouseenter', () => {
-            selectedIndex = index;
+            // Find the actual index of this option in the DOM
+            const items = dropdown.querySelectorAll('.typeahead-option');
+            const actualIndex = Array.from(items).indexOf(item);
+            selectedIndex = actualIndex;
             updateSelection();
         });
         
@@ -824,29 +828,12 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
     function updateSelection() {
         const items = dropdown.querySelectorAll('.typeahead-option');
         items.forEach((item, index) => {
-            const actualIndex = getActualOptionIndex(selectedIndex);
-            if (index === actualIndex) {
+            if (index === selectedIndex) {
                 item.style.backgroundColor = '#e3f2fd';
             } else {
                 item.style.backgroundColor = '';
             }
         });
-    }
-    
-    // Function to get the actual option index (accounting for sections)
-    function getActualOptionIndex(keyboardIndex) {
-        if (!showMostSelected || keyboardIndex < 0) return keyboardIndex;
-        
-        const mostSelectedCount = getMostCommonlySelectedMetrics().filter(metric => options.includes(metric)).length;
-        const sectionOffset = mostSelectedCount > 0 ? 2 : 0; // 2 for header + divider
-        
-        // If keyboard index is within most selected section
-        if (keyboardIndex < mostSelectedCount) {
-            return keyboardIndex;
-        }
-        
-        // If keyboard index is in the main options section
-        return keyboardIndex - sectionOffset;
     }
     
     // Event listeners
@@ -863,32 +850,36 @@ function createTypeahead(containerId, options, selectedValue = '', placeholder =
     input.addEventListener('keydown', (e) => {
         if (dropdown.style.display === 'none') return;
         
-        // Calculate total items including sections
-        const mostSelectedCount = showMostSelected && !input.value ? 
-            getMostCommonlySelectedMetrics().filter(metric => options.includes(metric)).length : 0;
-        const sectionOffset = mostSelectedCount > 0 ? 2 : 0; // 2 for header + divider
-        const totalItems = filteredOptions.length + sectionOffset;
+        // Get the actual option items (excludes headers/dividers)
+        const items = dropdown.querySelectorAll('.typeahead-option');
+        const totalItems = items.length;
         
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
                 selectedIndex = Math.min(selectedIndex + 1, totalItems - 1);
                 updateSelection();
+                // Scroll selected item into view
+                if (selectedIndex >= 0 && selectedIndex < totalItems) {
+                    items[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
                 break;
             case 'ArrowUp':
                 e.preventDefault();
                 selectedIndex = Math.max(selectedIndex - 1, -1);
                 updateSelection();
+                // Scroll selected item into view
+                if (selectedIndex >= 0 && selectedIndex < totalItems) {
+                    items[selectedIndex].scrollIntoView({ block: 'nearest' });
+                }
                 break;
             case 'Enter':
                 e.preventDefault();
-                if (selectedIndex >= 0) {
-                    const actualIndex = getActualOptionIndex(selectedIndex);
-                    if (actualIndex >= 0 && actualIndex < filteredOptions.length) {
-                        input.value = filteredOptions[actualIndex];
-                        dropdown.style.display = 'none';
-                        input.dispatchEvent(new Event('change'));
-                    }
+                if (selectedIndex >= 0 && selectedIndex < totalItems) {
+                    const selectedOption = items[selectedIndex].dataset.optionValue;
+                    input.value = selectedOption;
+                    dropdown.style.display = 'none';
+                    input.dispatchEvent(new Event('change'));
                 }
                 break;
             case 'Escape':
