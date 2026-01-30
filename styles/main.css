@@ -30,7 +30,6 @@ h1 {
     font-weight: 300;
 }
 
-<<<<<<< HEAD
 /* Badge styling */
 .badge-new {
     background: #28a745;
@@ -43,8 +42,6 @@ h1 {
     margin-left: 5px;
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 
 .import-config-section {
 	display: flex;
@@ -113,23 +110,15 @@ h1 {
     pointer-events: none;
 }
 
-<<<<<<< HEAD
 /* Filter Controls - Compact Design */
 .filter-controls {
     margin: 10px 0;
     padding: 8px;
-=======
-/* Sort Control */
-.sort-control {
-    margin: 15px 0;
-    padding: 10px;
->>>>>>> a4edd76 (Added agents.md with some good practices)
     background: rgba(255, 255, 255, 0.1);
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-<<<<<<< HEAD
 .filter-row {
     display: flex;
     gap: 6px;
@@ -159,35 +148,16 @@ h1 {
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
     font-size: 11px;
-=======
-.sort-control label {
-    display: block;
-    font-size: 12px;
-    color: white;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.sort-control select {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    font-size: 13px;
->>>>>>> a4edd76 (Added agents.md with some good practices)
     background: rgba(255, 255, 255, 0.9);
     color: #333;
 }
 
-<<<<<<< HEAD
 .filter-controls input:focus {
     outline: none;
     border-color: #feba03;
     box-shadow: 0 0 0 1px rgba(254, 186, 3, 0.3);
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 .content h2 {
     color: #116688;
     margin: 10px 0px;
@@ -205,10 +175,6 @@ h1 {
     border-radius: 8px;
     padding: 20px;
     text-align: center;
-<<<<<<< HEAD
-=======
-    margin-bottom: 20px;
->>>>>>> a4edd76 (Added agents.md with some good practices)
     cursor: pointer;
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.1);
@@ -406,7 +372,6 @@ th.section {
     flex: 1;
 }
 
-<<<<<<< HEAD
 .experiment-stats.two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -421,8 +386,6 @@ th.section {
     gap: 8px;
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 .experiment-stats strong {
     color: #333;
 }
@@ -530,7 +493,6 @@ th.section {
 }
 
 .revenue-projection h4 {
-<<<<<<< HEAD
     margin: 0;
     color: #2e7d32;
 }
@@ -539,11 +501,6 @@ th.section {
     color: #666;
     font-size: 0.8em;
 }
-=======
-    margin-top: 0;
-    color: #2e7d32;
-}
->>>>>>> a4edd76 (Added agents.md with some good practices)
 
 .revenue-projection p {
     margin: 5px 0;
@@ -576,7 +533,6 @@ th.section {
     visibility: visible;
 }
 
-<<<<<<< HEAD
 /* Date Tooltips */
 .date-tooltip {
     position: relative;
@@ -649,8 +605,6 @@ th.section {
     visibility: visible;
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 /* Share Dialog */
 .share-overlay {
     position: fixed;
@@ -731,11 +685,7 @@ th.section {
 
 /* Experiments List */
 .experiment-item {
-<<<<<<< HEAD
     padding: 10px;
-=======
-    padding: 15px;
->>>>>>> a4edd76 (Added agents.md with some good practices)
     margin-bottom: 12px;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -773,13 +723,8 @@ th.section {
 .experiment-item {
     position: relative;
 }
-<<<<<<< HEAD
 .icon-container
 {    
-=======
-
-.validation-tick {
->>>>>>> a4edd76 (Added agents.md with some good practices)
     position: absolute;
     bottom: 8px;
     right: 8px;
@@ -787,21 +732,8 @@ th.section {
     z-index: 1;
 }
 
-<<<<<<< HEAD
 .experiment-item h4 {
     margin: 0 0 4px 0;
-=======
-.samplesize-tick {
-    position: absolute;
-    bottom: 28px;
-    right: 8px;
-    font-size: 14px;
-    z-index: 1;
-}
-
-.experiment-item h4 {
-    margin: 0 0 8px 0;
->>>>>>> a4edd76 (Added agents.md with some good practices)
     font-size: 14px;
     color: #116688;
     font-weight: 600;
@@ -822,7 +754,6 @@ th.section {
     margin-bottom: 6px;
 }
 
-<<<<<<< HEAD
 /* Status-based styling - only opacity changes, keep original border color */
 .experiment-item.status-stale {
     opacity: 0.7;
@@ -912,8 +843,6 @@ th.section {
     border-color: #dee2e6;
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 /* Responsive Design */
 @media (max-width: 768px) {
     body {
@@ -1009,7 +938,6 @@ th.section {
     cursor: pointer;
     margin: 0;
 }
-<<<<<<< HEAD
 
 /* Typeahead dropdown section styling */
 .typeahead-dropdown .typeahead-section-header,
@@ -1160,5 +1088,3 @@ th.section {
     border-color: rgba(255, 255, 255, 0.5);
     transform: scale(1.1);
 }
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)

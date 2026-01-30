@@ -96,7 +96,6 @@ function formatNumber(num) {
     return num.toLocaleString();
 }
 
-<<<<<<< HEAD
 // Smart number formatting functions
 function determineDecimalPlaces(values) {
     const maxAbsValue = Math.max(...values.map(v => Math.abs(v)));
@@ -168,8 +167,6 @@ function formatMetricRow(controlValue, variantBValue, variantCValue = null, vari
     };
 }
 
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
 // Calculate percentage change
 function calculatePercentageChange(control, variant) {
     if (!control || !variant) return null;
@@ -218,11 +215,7 @@ function calculateExperimentAnalytics(config, globalVisits, data) {
     const startDate = new Date(config.startDate);
     const currentDate = new Date();
     const timeDiff = currentDate.getTime() - startDate.getTime();
-<<<<<<< HEAD
     const dayDifference = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-=======
-    const dayDifference = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
->>>>>>> a4edd76 (Added agents.md with some good practices)
 
     analytics.daysRunning = dayDifference;
 
@@ -241,30 +234,22 @@ function calculateExperimentAnalytics(config, globalVisits, data) {
             
             const metricData = data.find(item => item.label === sampleSizeMetricName);
             if (metricData) {
-<<<<<<< HEAD
                 // Use multi-variant structure: find minimum across all variants
                 const variants = [metricData.control];
                 if (metricData.variantB !== null && metricData.variantB !== undefined) variants.push(metricData.variantB);
                 if (metricData.variantC !== null && metricData.variantC !== undefined) variants.push(metricData.variantC);
                 if (metricData.variantD !== null && metricData.variantD !== undefined) variants.push(metricData.variantD);
                 currentSampleSize = Math.min(...variants);
-=======
-                currentSampleSize = Math.min(metricData.control, metricData.variant);
->>>>>>> a4edd76 (Added agents.md with some good practices)
                 dailyRate = currentSampleSize / analytics.daysRunning;
                 analytics.dailyTrafficRate = Math.round(dailyRate);
             }
         } else if (globalVisits) {
-<<<<<<< HEAD
             // Use multi-variant structure: find minimum across all variants
             const variants = [globalVisits.control];
             if (globalVisits.variantB !== null && globalVisits.variantB !== undefined) variants.push(globalVisits.variantB);
             if (globalVisits.variantC !== null && globalVisits.variantC !== undefined) variants.push(globalVisits.variantC);
             if (globalVisits.variantD !== null && globalVisits.variantD !== undefined) variants.push(globalVisits.variantD);
             currentSampleSize = Math.min(...variants);
-=======
-            currentSampleSize = Math.min(globalVisits.control, globalVisits.variant);
->>>>>>> a4edd76 (Added agents.md with some good practices)
             dailyRate = currentSampleSize / analytics.daysRunning;
             analytics.dailyTrafficRate = Math.round(dailyRate);
         }
@@ -276,7 +261,6 @@ function calculateExperimentAnalytics(config, globalVisits, data) {
                 const projectedEnd = new Date(currentDate);
                 projectedEnd.setDate(projectedEnd.getDate() + daysRemaining);
                 analytics.projectedEndDate = projectedEnd;
-<<<<<<< HEAD
                 
                 // Calculate full week cycle end date
                 const startDate = new Date(config.startDate);
@@ -288,10 +272,6 @@ function calculateExperimentAnalytics(config, globalVisits, data) {
             } else {
                 analytics.projectedEndDate = currentDate; // Already reached
                 analytics.projectedEndDateWeekCycle = currentDate;
-=======
-            } else {
-                analytics.projectedEndDate = currentDate; // Already reached
->>>>>>> a4edd76 (Added agents.md with some good practices)
             }
         }
     }
@@ -299,11 +279,7 @@ function calculateExperimentAnalytics(config, globalVisits, data) {
     return analytics;
 }
 
-<<<<<<< HEAD
 function calculateRevenueProjection(data, config, analytics, globalVisits, variant = 'variantB') {
-=======
-function calculateRevenueProjection(data, config, analytics, globalVisits) {
->>>>>>> a4edd76 (Added agents.md with some good practices)
     // Find the revenue metric by its fixed string name (unchanged)
     const revenueMetric = data.find(item => item.label === "Revenue (incl. C&C) - SPR");
     
@@ -329,7 +305,6 @@ function calculateRevenueProjection(data, config, analytics, globalVisits) {
         return null;
     }
 
-<<<<<<< HEAD
     // Get the variant value and visits based on the specified variant
     let variantValue, variantVisits;
     
@@ -352,12 +327,6 @@ function calculateRevenueProjection(data, config, analytics, globalVisits) {
         // Rate-based calculation for binomial metrics (e.g., conversion, add to cart)
         const controlRate = mainMetric.control / globalVisits.control;
         const variantRate = variantValue / variantVisits;
-=======
-    let mainMetricChange;
-    if (!window.continuousMetrics.includes(mainMetric.label) && globalVisits && globalVisits.control > 0 && globalVisits.variant > 0) {
-        const controlRate = mainMetric.control / globalVisits.control;
-        const variantRate = mainMetric.variant / globalVisits.variant;
->>>>>>> a4edd76 (Added agents.md with some good practices)
         if (controlRate > 0) {
             mainMetricChange = ((variantRate - controlRate) / controlRate) * 100;
         } else if (variantRate > 0) {
@@ -366,7 +335,6 @@ function calculateRevenueProjection(data, config, analytics, globalVisits) {
             mainMetricChange = 0;
         }
     } else {
-<<<<<<< HEAD
         // Absolute calculation for continuous metrics
         mainMetricChange = calculatePercentageChange(mainMetric.control, variantValue);
     }
@@ -431,19 +399,6 @@ function calculateRevenueProjection(data, config, analytics, globalVisits) {
         annualRevenue,
         mainMetricChange: mainMetricChange.toFixed(2),
         revenueChange: revenueChange.toFixed(2)
-=======
-        mainMetricChange = calculatePercentageChange(mainMetric.control, mainMetric.variant);
-    }
-    
-    const totalRevenue = revenueMetric.control + revenueMetric.variant;
-    const dailyRevenue = totalRevenue / analytics.daysRunning;
-    const dailyImpact = dailyRevenue * (mainMetricChange / 100);
-    const annualRevenue = Math.round(dailyImpact * 365);
-
-    return {
-        annualRevenue,
-        mainMetricChange: mainMetricChange.toFixed(2)
->>>>>>> a4edd76 (Added agents.md with some good practices)
     };
 }
 
@@ -459,10 +414,7 @@ window.Utils = {
     loadFromStorage,
     formatDate,
     formatNumber,
-<<<<<<< HEAD
     formatMetricRow,
-=======
->>>>>>> a4edd76 (Added agents.md with some good practices)
     calculatePercentageChange,
     parseCSV,
     createTooltip,
