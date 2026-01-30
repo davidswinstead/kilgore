@@ -23,6 +23,13 @@ h1 {
     text-align: center;
 }
 
+h5 {
+    margin: 0 0 5px 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-align: center;
+}
+
 .header p {
     margin: 0;
     font-size: 1rem;

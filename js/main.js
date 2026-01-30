@@ -431,11 +431,53 @@ function extractStartDateFromCSV(csvText) {
     return null;
 }
 
+// Helper function to parse a CSV row respecting quoted fields
+function parseCSVRow(row) {
+    const cells = [];
+    let currentCell = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        
+        if (char === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (char === ',' && !insideQuotes) {
+            cells.push(cleanCSVValue(currentCell));
+            currentCell = '';
+        } else {
+            currentCell += char;
+        }
+    }
+    
+    // Push the last cell
+    cells.push(cleanCSVValue(currentCell));
+    
+    return cells;
+}
+
+// Helper function to clean CSV values: strip quotes and remove thousand separators
+function cleanCSVValue(value) {
+    // Trim whitespace
+    value = value.trim();
+    
+    // If value is surrounded by double quotes, remove them
+    if (value.startsWith('"') && value.endsWith('"')) {
+        value = value.slice(1, -1);
+    }
+    
+    // Remove thousand separator commas from numeric values
+    // Only remove commas that are between digits (thousand separators)
+    // Keep decimal periods intact
+    value = value.replace(/(\d),(?=\d)/g, '$1');
+    
+    return value;
+}
+
 // Original working CSV parsing function with multi-variant support
 function parseCSVData(csvText) {
-    // Use comma separator for CSV files
-    const separator = ',';
-    const rows = csvText.split('\n').map(r => r.split(separator).map(cell => cell.trim().replace(/"/g, '')));
+    // Parse CSV rows respecting quoted fields
+    const rows = csvText.split('\n').map(row => parseCSVRow(row));
 
     let data = [];
     let currentSectionVisits = null;
